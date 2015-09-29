@@ -1,0 +1,38 @@
+
+<table class="summary">
+
+<tr>
+<td colspan=2>
+	<a href=/strava?id={{ item.id }}>{{ item.name }}</a> - {{ item.location_city }}
+</td>
+</tr>
+<td>
+
+	<table class="summary">
+	
+	<tr>
+	  <td class="summary" width=160>Date</td><td class="summary" width=160px>{{ tRunDate }} km.</td>
+	</tr>
+	  
+	<tr>
+	  <td class="summary" width=160>Total Track</td><td class="summary" width=160px><b>{{ tDistance }} km.</b></td>
+	</tr>
+	
+	</table>
+
+</td><td style="vertical-align: bottom; ">
+
+	<table class="summary">
+	
+	<tr>
+	  <td class="summary" width=160px>Moving Time</td><td class="summary width=160px">{{ tMovingTime }}</td>
+	</tr>
+	
+	<tr>
+	  <td class="summary" width=160px>Pace</td><td class="summary width=160px">{{ tRunPace }}</td>
+	</tr>
+	
+	</table>
+
+</td></tr>
+</table>
