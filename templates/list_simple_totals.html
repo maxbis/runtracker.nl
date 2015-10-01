@@ -1,0 +1,31 @@
+<table>
+<tr><td>
+
+<table class="summary" bgcolor=#F8F8F8 border=1 >
+<tr><td colspan="2" align="center">
+Week Totals
+</td></tr>
+{% for elem in lWeekTots %}
+<tr>
+<td class="summary" align="right" width="50px">{{ elem[0] }}</td>
+<td class="summary" align="right" width="50px">{{ elem[1] }} km</td>
+</tr>
+{% endfor %}
+</table>
+
+</td><td>
+
+<table class="summary" bgcolor=#F8F8F8 border=1 >
+<tr><td colspan="2" align="center">
+Month Totals
+</td></tr>
+{% for elem in lMonthTots %}
+<tr>
+<td class="summary" align="right" width="50px">{{ elem[0] }}</td>
+<td class="summary" align="right" width="50px">{{ elem[1] }} km</td>
+</tr>
+{% endfor %}
+</table>
+
+</td></tr>
+</table>

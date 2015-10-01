@@ -1,0 +1,348 @@
+<br>
+<table>
+<tr>
+ <td style="border-bottom: none; text-align: center; font: 16px sans-serif;" colspan=2><b>{{ tRunName }}</b> {{ tRunDate.1 }}</td>
+</tr>
+
+<tr>
+<td style="vertical-align: bottom; width: 550px;">
+
+<!-- SUMMARY -->
+<table class="summary">
+	<tr>
+	  <td class="summary" width=200px>Date</td><td class="summary">{{ tRunDate.0 }}</td>
+	</tr><tr>
+	  <td class="summary">Time</td><td class="summary">{{ tTotTime }}</td>
+	</tr><tr>
+	  <td class="summary" width=200px>Total Track</td><td class="summary"><b>{{ tTotTrackLen }}</b> km</td>
+	</tr><tr>
+	  <td class="summary">Pace</td><td class="summary"><b>{{ tTotPace }}</b> min./hour</td>
+	</tr>
+</table>
+
+</td><td style="vertical-align: top; ">
+
+<table class="summary">
+	<tr>
+	  <td class="summary">Average Heart Rate</td><td class="summary">{{ tAvgHeartrate }}</td>
+	</tr><tr>
+		 <td class="summary">Average Cadence</td><td class="summary">{{ tAvgCadence }}</td>
+	</tr><tr>
+		 <td class="summary">Average Stride Length</td><td class="summary">{{ tAvgStep }}</td>
+	</tr>
+</table>
+
+</td></tr><td colspan=2>
+
+
+<!-- TRACKS -->
+<table class="summary">
+<tr>
+  <td class="head" colspan=2>Track</td>
+  <td class="head" width=44>Time</td>
+  <td class="head" width=44>Pace</td>
+  <td class="head" width=90 colspan=2>Heart Rate</td>
+  <td class="head" width=52 colspan=1>Cadence</td>
+</tr>
+
+{% for elem in tTrackList %}
+<tr>
+<td style="width: 70; text-align: right;">{{ elem.tracklen }} m.&nbsp;</td>
+<td>
+  <div class="chart">
+	<div style="width: {{ elem.p1 * 6}}px; background-color: #F0F0F0; color:black;">{{ elem.p1 }}</div>
+	<div style="width: {{ elem.p2 * 6 }}px; background-color: steelblue;">
+	{% if elem.filtered == 0 %}
+		&nbsp;
+	{% else %}
+		&nbsp;{{ elem.filtered }}
+	{% endif %}
+	</div>
+	<div style="width: {{ 610-elem.p2*6-elem.p1*6 }}px; background-color: #F0F0F0; color: black; text-align: right">{{ elem.p2 +elem.p1 }}</div>
+  </div>
+</td>
+<td style="text-align:right;">&nbsp;{{ elem.mintime }}</td>
+<td >&nbsp;&nbsp;&nbsp;{{ elem.pace }}</td>
+<td>&nbsp;{{ elem.avghr }} </td>
+<td style="color: grey;"> ({{ elem.minhr }}-{{ elem.maxhr }})</td>
+<td>{{ elem.avgcad }}</td>
+</tr>
+{% endfor %}
+</table>
+
+</td><tr><td>
+
+    <!-- HEART RATE ZONES -->
+	<table class="summary">
+	<tr>
+	   <td class="head" colspan=4>Heart Rate Zones; averge {{ tAvgHeartrate }}</td>
+	   <td class="head" style="width: 50px; text-align: right;">Time</td>
+	   <td class="head" style="width: 50px; text-align: right;">Perc</td>
+	</tr>
+	{% for elem in tHrZones %}
+	<tr>
+	  <td style="width: 30px; color: black;" >Z {{ elem.i }}</td>
+	  
+	  	<td style="color: grey;  text-align: right;">{{ elem.z1 }}</td>
+	  	
+		  {% if elem.z2 != 999 %}
+		  	<td style="color: grey;  text-align: left;"> - {{ elem.z2 }}&nbsp;</td>
+		  {% else %}
+		    <td style="color: grey;  text-align: left;"> - &infin;&nbsp;</td>
+		  {% endif %}
+	 
+	  <td with=300px bgcolor=#F8F8F8>
+		{% if elem.timeprc > 1 %}
+		<div class="chart" style="width:300px">
+		  {% if elem.hl %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: OrangeRed ;">{{ elem.timeprcstr }}</div>
+		  {% else %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: LightCoral ;">{{ elem.timeprcstr }}</div>
+		  {% endif %}
+		</div>
+		{% endif %}
+		</td>
+	   <td style="text-align: right;">{{ elem.timestr }}</td>
+	   <td style="text-align: right;">{{ elem.timeprcstr }}%</td>
+	</tr>
+	{% endfor %}
+	</table>
+
+</td><td>
+
+	<!-- PACE ZONES -->
+	<table class="summary">
+	<tr>
+	  <td class="head" colspan=3>Pace Zones; average {{ tTotPace }}</td>
+	   <td class="head" style="width: 50px; text-align: right;">Time</td>
+	   <td class="head" style="width: 50px; text-align: right;">Perc</td>
+	</tr>
+	{% for elem in tPaceZones %}
+	<tr>
+	  <td style="width: 45px; color: black;" >{{ elem.z1mmss }}</td>
+	  {% if elem.z2 != 999 %}
+	 	 <td width=45px>{{ elem.z2mmss }}</td>
+	  {% else %}
+	      <td width=45px>&infin;</td>
+	  {% endif %}
+	  <td with=300px bgcolor=#F8F8F8>
+		{% if elem.timeprc > 1 %}
+		<div class="chart" style="width:300px">
+		   {% if elem.hl %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: MediumSeaGreen;">{{ elem.timeprcstr }}</div>	   
+		   {% else %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: teal;">{{ elem.timeprcstr }}</div>
+		  {% endif %}
+		</div>
+		{% endif %}
+		</td>
+	   <td style="text-align: right;">{{ elem.timestr }}</td>
+	   <td style="text-align: right;">{{ elem.timeprcstr }}%</td>
+	</tr>
+	{% endfor %}
+	</table>
+
+
+</td></tr><tr>
+
+<td>
+
+	<!-- CADEANSE ZONES-->
+	<table class="summary">
+	<tr>
+	  <td class="head" colspan=3>Cadence Rate Zones; average {{ tAvgCadence }}</td>
+	   <td class="head" style="width: 50px; text-align: right;">Time</td>
+	   <td class="head" style="width: 50px; text-align: right;">Perc</td>
+	</tr>
+	{% for elem in tCadZones %}
+	<tr>
+	 <td style="width: 30px; color: black;  text-align: right;">{{ elem.z1 }}</td>
+	{% if elem.z2 != 999 %}
+	  <td style="width: 30px; color: black;  text-align: left;">-{{ elem.z2 }}&nbsp;</td>
+	{% else %}
+	  <td style="width: 3px; color: black;  text-align: left;">-&nbsp;&infin;&nbsp;</td>
+	{% endif %}
+	  <td with=300px bgcolor=#F8F8F8>
+		{% if elem.timeprc > 1 %}
+		<div class="chart" style="width:300px">
+		  {% if elem.hl  %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: GoldenRod;">{{ elem.timeprcstr }}</div>
+          {% else %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: DarkGoldenRod;">{{ elem.timeprcstr }}</div>
+		  {% endif %}
+		</div>
+		{% endif %}
+		</td>
+	   <td style="text-align: right;">{{ elem.timestr }}</td>
+	   <td style="text-align: right;">{{ elem.timeprcstr }}%</td>
+	</tr>
+	{% endfor %}
+	</table>
+
+</td>
+
+
+
+<td>
+
+	<!-- Step (zise) ZONES-->
+	<table class="summary">
+	<tr>
+	  <td class="head" colspan=3>Stride Length; average {{ tAvgStep }}</td>
+	   <td class="head" style="width: 50px; text-align: right;">Time</td>
+	   <td class="head" style="width: 50px; text-align: right;">Perc</td>
+	</tr>
+	{% for elem in tStepZones %}
+	<tr>
+	 <td style="width: 30px; color: black;  text-align: right;">{{ elem.z1 }}</td>
+	{% if elem.z2 != 999 %}
+	  <td style="width: 30px; color: black;  text-align: left;">-{{ elem.z2 }}&nbsp;</td>
+	{% else %}
+	  <td style="width: 3px; color: black;  text-align: left;">-&nbsp;&infin;&nbsp;</td>
+	{% endif %}
+	  <td with=300px bgcolor=#F8F8F8>
+		{% if elem.timeprc > 1 %}
+		<div class="chart" style="width:300px">
+		  {% if elem.hl  %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: Coral;">{{ elem.timeprcstr }}</div>
+          {% else %}
+		    <div style="width: {{ elem.timeprc * 4 }}px; background-color: Chocolate ;">{{ elem.timeprcstr }}</div>
+		  {% endif %}
+		</div>
+		{% endif %}
+		</td>
+	   <td style="text-align: right;">{{ elem.timestr }}</td>
+	   <td style="text-align: right;">{{ elem.timeprcstr }}%</td>
+	</tr>
+	{% endfor %}
+	</table>
+
+</td>
+
+</tr></table>
+
+<hr>
+
+<!-- Pace Split, Quarters and KM's -->
+
+<table class="summary">
+	<tr>
+	<td class="head">Part</td>
+	<td class="head">Distance</td>
+	<td class="head">Time</td>
+	<td class="head">Pace</td>
+	<td class="head">HR</td>
+	<td class="head"></td>
+	</tr>
+	
+<tr><td style="color: grey;" colspan=6>&nbsp;Splits</td></tr>
+
+	{% for elem in hSpeed %}
+	<tr>
+		<td width=30px style="color: black; text-align: right;">H{{ elem.i }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
+		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
+		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
+		<td bgcolor=#F8F8F8>
+		{% if elem.dSpeed < 350 %}
+			{%if elem.faster == True %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="13" style="background-color: limeGreen;">
+			</canvas>
+			{% else %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="13" style="background-color: CadetBlue;">
+			</canvas>
+			{% endif %}
+		{% endif %}
+		
+		{% if elem.hr > 0 %}
+		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
+		{% endif %}
+		</td>
+		
+	</tr>
+	{% endfor %}
+	
+<tr><td style="color: grey;"colspan=6>&nbsp;Quarter Splits</td>
+</tr>
+	
+	{% for elem in qSpeed %}
+	<tr>
+		<td width=30px style="color: black; text-align: right;">Q{{ elem.i }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
+		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
+		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
+		<td bgcolor=#F8F8F8>
+		{% if elem.dSpeed < 350 %}
+			{%if elem.faster == True %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9px" style="background-color: limeGreen;">
+			</canvas>
+			{% else %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9px" style="background-color: CadetBlue;">
+			</canvas>
+			{% endif %}
+		{% endif %}
+		{% if elem.hr > 0 %}
+		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
+		{% endif %}
+		</td>
+		
+	</tr>
+	{% endfor %}
+	
+<tr><td style="color: grey;"colspan=6>{{tSplit}} m. Splits
+</td>
+</tr>
+	
+	{% for elem in kmSpeed %}
+	<tr>
+		<td width=30px style="color: black; text-align: right;">{{ elem.i }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.distance }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
+		{% if elem.hi_low == 0 %}
+			<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
+		{% endif %}
+		{% if elem.hi_low == 1 %}
+			<td width=45px bgcolor=#E8F8E8 style="color: Blue; text-align: right;"><b>{{ elem.dSpeedStr }}</b></td>
+		{% endif %}
+		{% if elem.hi_low == -1 %}
+			<td width=45px bgcolor=#E8F8E8 style="color: Red; text-align: right;"><b>{{ elem.dSpeedStr }}</b></td>
+		{% endif %}
+		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
+		<td bgcolor=#F8F8F8>
+		{% if elem.dSpeed < 350 %}
+			{%if elem.faster == True %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="6" style="background-color: limeGreen;">
+			</canvas>
+			{% else %}
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="6" style="background-color: CadetBlue;">
+			</canvas>
+			{% endif %}
+		{% endif %}
+	
+		{% if elem.hr > 0 %}
+			<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
+		{% endif %}
+		</td>
+		
+	</tr>
+	{% endfor %}
+
+	<tr><td colspan=6>
+	<br>
+	<a href="/strava?id={{tRunId}}&split=100#splits">100</a> m.&nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=200#splits">200</a> m.&nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=400#splits">400</a> m.&nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=500#splits">500</a> m.&nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=1000#splits">1000</a> m.&nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=1600#splits">1600</a>m. &nbsp;|&nbsp;
+	<a href="/strava?id={{tRunId}}&split=2000#splits">2000</a> m.
+	</td></tr>
+</table>
+
+<hr id="splits">
+
+<a href="/strava?id={{tRunId}}&refresh=1">Refresh from Strava</a>
+<br>
+

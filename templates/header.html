@@ -1,0 +1,77 @@
+<heaad>
+
+<TITLE>Strava Run Analysis by Max</TITLE>
+
+<style>
+
+table.summary {
+  font: 14px sans-serif;
+  border-collapse: collapse;
+  border-spacing: 0px;
+  margin: 20px;
+}
+
+td.summary {
+  border: 1px dotted #B0B0B0;
+  border-left: none;
+  border-right: none;
+  padding: 5px;
+}
+
+td.head {
+  border: 1px dotted #B0B0B0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  padding: 5px;
+  text-align: left;
+}
+
+td.totals {
+  padding: 6px;
+  display: inline;
+  vertical-align:top;
+  text-align: right;
+  align: right;
+}
+
+.chart div {
+  font: 10px sans-serif;
+  background-color: white;
+  text-align: left;
+  padding: 3px;
+  margin: 0px;
+  color: white;
+  display: inline-block;
+}
+
+a:link.button, a:visited {
+    display: inline;
+    color: #404040;
+    width: 120px;
+    text-align: center;
+    padding: 1px;
+    font: 12px sans-serif;
+    text-decoration: none;
+    border:1px solid #909090; 
+}
+
+a:link, a:visited {
+    font: 14px sans-serif;
+}
+
+a:hover, a:active {
+    background-color: Cornsilk;
+}
+
+</style>
+
+<div style="width: 1200px; margin: auto; background-color: #F0F0F0;">
+&nbsp;<a title="List runs from cache" class="button" href="/list?refresh=1">List</a>
+&nbsp;<a title="Refresh list from Strava" class="button" href="/list?refresh=0">List Refresh</a>
+&nbsp;&nbsp;<a title="Get cached details" class="button" href="/cache">Overview All</a>
+&nbsp;<a title="Get cached details" class="button" href="/cache?type=1">Overview Races</a>
+&nbsp;<a title="Get cached details" class="button" href="/cache?type=2">Overview Long Runs</a>
+</div>
+
+</head>

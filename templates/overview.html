@@ -1,0 +1,53 @@
+
+<table class="summary" bgcolor="#F8F8F8" border=0>
+	
+<tr>
+	{% if item.workout_type == 1 %}
+		<td colspan=8 style="color: Red;">
+		<a href=/strava?id={{ item.id }} style="color: Red;"><b>{{ item.name }}</b></a>
+	{% else %}
+		{% if item.workout_type == 2 %}
+			<td colspan=8 style="color: Green;">
+			<a href=/strava?id={{ item.id }} style="color: Green;"><b>{{ item.name }}</b></a>
+		{% else %}
+			<td colspan=8 style="color: Black;">
+			<a href=/strava?id={{ item.id }} style="color: Black;">{{ item.name }}</a>
+		{% endif %}
+	{% endif %}
+		<!--  - {{ item.location_city }} - {{item.workout_type}} - {{item.id}}
+		-->
+	</td>
+</tr>
+	
+<tr>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140>Date</td><td class="summary" width=140px>{{ tRunDate }}</td>
+	  <td width=40px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>Total Track</td><td class="summary width=140px"><b>{{tDistance}}</b> km</td>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>Fastest km after 25%</td><td class="summary width=140px">{{ tTrack[0] }} km</td>
+</tr>
+
+<tr>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>Moving Time</td><td class="summary width=140px">{{ tMovingTime }}</td>
+	  <td width=40px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140>Total Pace</td><td class="summary" width=140px>{{ tRunPace }} min/km</td>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>HR Fastest km</td><td class="summary width=140px">{{ tTrack[1] }}</td>
+	
+</tr>
+
+<tr>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>Pausing Time</td><td class="summary width=140px">{{ tPause }}</td>
+	  <td width=40px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>Total avg Heart Rate</td><td class="summary width=140px">{{ tAverageHr }}</td>
+	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
+	  <td class="summary" width=140px>&nbsp;</td><td class="summary width=140px">&nbsp;</td>
+	
+</tr>
+	
+</table>
+
+
