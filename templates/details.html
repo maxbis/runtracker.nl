@@ -81,7 +81,13 @@
 	</tr>
 	{% for elem in tHrZones %}
 	<tr>
-	  <td style="width: 30px; color: black;" >Z {{ elem.i }}</td>
+	  <td style="width: 30px; color: black;" >
+	  {% if elem.i - 1 < 0 %}
+	  	&nbsp;
+	  {% else %} 
+	  	Z {{ elem.i - 1 }}
+	  {% endif %}	
+	  </td>
 	  
 	  	<td style="color: grey;  text-align: right;">{{ elem.z1 }}</td>
 	  	
@@ -147,7 +153,7 @@
 
 <td>
 
-	<!-- CADEANSE ZONES-->
+	<!-- CADENCE ZONES-->
 	<table class="summary">
 	<tr>
 	  <td class="head" colspan=3>Cadence Rate Zones; average {{ tAvgCadence }}</td>
@@ -225,17 +231,18 @@
 
 <!-- Pace Split, Quarters and KM's -->
 
-<table class="summary">
+<table class="summary" border=0>
 	<tr>
 	<td class="head">Part</td>
 	<td class="head">Distance</td>
 	<td class="head">Time</td>
 	<td class="head">Pace</td>
-	<td class="head">HR</td>
+	<td class="head" text-align: right;>&nbsp;&nbsp;&nbsp;&Delta;</td>	
+	<td class="head" text-align: right;>HR</td>
 	<td class="head"></td>
 	</tr>
 	
-<tr><td style="color: grey;" colspan=6>&nbsp;Splits</td></tr>
+<tr><td style="color: grey;" colspan=7>&nbsp;Splits</td></tr>
 
 	{% for elem in hSpeed %}
 	<tr>
@@ -243,6 +250,9 @@
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
 		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
+		
+		<td width=30px style="color:DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
+		
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
 		<td bgcolor=#F8F8F8>
 		{% if elem.dSpeed < 350 %}
@@ -263,7 +273,7 @@
 	</tr>
 	{% endfor %}
 	
-<tr><td style="color: grey;"colspan=6>&nbsp;Quarter Splits</td>
+<tr><td style="color: grey;"colspan=7>&nbsp;Quarter Splits</td>
 </tr>
 	
 	{% for elem in qSpeed %}
@@ -272,6 +282,9 @@
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
 		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
+		
+		<td width=30px style="color: DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
+		
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
 		<td bgcolor=#F8F8F8>
 		{% if elem.dSpeed < 350 %}
@@ -291,14 +304,14 @@
 	</tr>
 	{% endfor %}
 	
-<tr><td style="color: grey;"colspan=6>{{tSplit}} m. Splits
+<tr><td style="color: grey;"colspan=7>{{tSplit}} m. Splits
 </td>
 </tr>
 	
 	{% for elem in kmSpeed %}
 	<tr>
 		<td width=30px style="color: black; text-align: right;">{{ elem.i }}</td>
-		<td width=45px style="color: grey; text-align: right;">{{ elem.distance }}</td>
+		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
 		{% if elem.hi_low == 0 %}
 			<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
@@ -309,6 +322,9 @@
 		{% if elem.hi_low == -1 %}
 			<td width=45px bgcolor=#E8F8E8 style="color: Red; text-align: right;"><b>{{ elem.dSpeedStr }}</b></td>
 		{% endif %}
+
+		<td width=30px style="color: DarkGreen; text-align: right;">&nbsp;{{ elem.dev }}</td>
+
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
 		<td bgcolor=#F8F8F8>
 		{% if elem.dSpeed < 350 %}
@@ -329,7 +345,7 @@
 	</tr>
 	{% endfor %}
 
-	<tr><td colspan=6>
+	<tr><td colspan=7>
 	<br>
 	<a href="/strava?id={{tRunId}}&split=100#splits">100</a> m.&nbsp;|&nbsp;
 	<a href="/strava?id={{tRunId}}&split=200#splits">200</a> m.&nbsp;|&nbsp;
