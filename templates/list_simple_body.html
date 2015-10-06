@@ -3,14 +3,14 @@
 <tr>
 	{% if item.workout_type == 1 %}
 		<td colspan=8 style="color: Red;">
-		<a href=/strava?id={{ item.id }} style="color: Red;"><b>{{ item.name }}</b></a>
+		<a href=/strava?user={{user}}&id={{ item.id }} style="color: Red;"><b>{{ item.name }}</b></a>
 	{% else %}
 		{% if item.workout_type == 2 %}
 			<td colspan=8 style="color: Green;">
-			<a href=/strava?id={{ item.id }} style="color: Green;"><b>{{ item.name }}</b></a>
+			<a href=/strava?user={{user}}&id={{ item.id }} style="color: Green;"><b>{{ item.name }}</b></a>
 		{% else %}
 			<td colspan=8 style="color: Black;">
-			<a href=/strava?id={{ item.id }} style="color: Black;">{{ item.name }}</a>
+			<a href=/strava?user={{user}}&id={{ item.id }} style="color: Black;">{{ item.name }}</a>
 		{% endif %}
 	{% endif %}
 	{% if tCache == 1 %}
