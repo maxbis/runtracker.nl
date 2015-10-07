@@ -4,6 +4,7 @@ from flask import request
 from flask import make_response
 from flask import redirect
 from ConfigParser import SafeConfigParser
+from stravalib import Client
 
 import requests
 import json
@@ -394,13 +395,14 @@ def createList(json_data, user, type):
 	return(HTML_Body, HTML_Tots)
 
 # create overview page and use cached details to enrich overview (fastest 1000 m. after 25%)
-def createXList(json_activity, type):
+def createXList(json_activity, user, type):
 	# Create overview page
 
 	weekday = ['Mo','Tu','We','Th','Fr','Sa','Su']
 	HTML = ""
 	tTrack=[ "", "" ]
 	tAverageHr = 0
+	path = 'cache/'+user+'/'
 	
 	for item in json_activity:
 		if item['type'] == 'Run':
@@ -412,7 +414,8 @@ def createXList(json_activity, type):
 				tDistance = "%3.1f" % ( item['distance']/1000 )
 				tMovingTime = mmss(item['moving_time'])
 				
-				jsonFileName = os.path.join("cache", "strava"+str(item['id'])+"-d.json")
+				jsonFileName = os.path.join(path, "strava"+str(item['id'])+"-d.json")
+				
 				if os.path.isfile(jsonFileName):
 					file = open(jsonFileName, "r")
 					json_detail = json.load(file)
@@ -478,10 +481,11 @@ def getStravaList(readCache, user):
 
 # 
 def getCachedActivities(user):
-	path = 'cache/'+user
+	path = 'cache/'+user+'/'
 	json_data =[]
 	
-	files = filter(os.path.isfile, glob.glob(path + "/" + "*a.json"))
+	files = filter(os.path.isfile, glob.glob(path + "*a.json"))
+	
 	files.sort(key=lambda x: x, reverse=True)
 	for filename in files:
 		if (filename.split("-")[-1] ==  "a.json"): # TODO: this line can be removed?
@@ -559,15 +563,34 @@ parser.read('auth.ini')
 #print parser.sections()
 bearer_id = parser.get('strava', 'bearer_id')
 
+STRAVA_CLIENT_ID     = parser.get('strava', 'STRAVA_CLIENT_ID')
+STRAVA_CALLBACK_URL  = parser.get('strava', 'STRAVA_CALLBACK_URL')
+STRAVA_CLIENT_SECRET = parser.get('strava', 'STRAVA_CLIENT_SECRET')
+
+
 header = {'Authorization': 'Bearer {0}'.format(bearer_id)}
+ 
  
 # ---- ---- ---- ----
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def start():
     return(getStravaUserID())
+
+@app.route('/login')
+def login():
+	return redirect(Client().authorization_url(client_id=1234, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
+
+
+@app.route('/auth')
+def auth():
+	code = request.args.get('code')
+	client = Client()
+	access_token = client.exchange_code_for_token(client_id=STRAVA_CLIENT_ID, client_secret=STRAVA_CLIENT_SECRET,code=code)
+	return('auth ok')
 
 
 @app.route('/hello')
@@ -687,10 +710,10 @@ def cache():
 	json_data = getCachedActivities(user)
 	
 	HTML = render_template('header.html', user=user)
-	HTML = HTML + createXList(json_data, type)
+	HTML = HTML + createXList(json_data, user, type)
 		
 	return( HTML )
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(host='127.0.0.1', port=5000, debug = True)
