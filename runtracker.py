@@ -3,6 +3,7 @@ from flask import render_template
 from flask import request
 from flask import make_response
 from flask import redirect
+from flask import redirect, session
 from ConfigParser import SafeConfigParser
 from stravalib import Client
 
@@ -179,7 +180,7 @@ def initList(list):
 	return(newList)
 	
 # Main routine to start analysing data
-def analyseActivity(user,header, id, name, date, split):
+def analyseActivity(user, header, id, name, date, split):
 	
 	json_data = getStravaTrackDetails(user,id)
 	
@@ -280,7 +281,7 @@ def analyseActivity(user,header, id, name, date, split):
 	interval = int(split)
 	kmSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr)
 
-	return( render_template('details.html', tTrackList=trackList, tPaceZones=tPaceZones, tHrZones=tHrZones, tCadZones=tCadZones, tStepZones=tStepZones, tRunName=tRunName, tRunId = tRunId, tRunDate=tRunDate, tTotTrackLen=tTotTrackLen, tTotTime=tTotTime, tTotPace=tTotPace, tAvgHeartrate=tAvgHeartrate, tAvgCadence=tAvgCadence, tAvgStep=tAvgStep, hSpeed=hSpeed, qSpeed=qSpeed, kmSpeed=kmSpeed, tSplit=split ) )
+	return( render_template('details.html', user=user, tTrackList=trackList, tPaceZones=tPaceZones, tHrZones=tHrZones, tCadZones=tCadZones, tStepZones=tStepZones, tRunName=tRunName, tRunId = tRunId, tRunDate=tRunDate, tTotTrackLen=tTotTrackLen, tTotTime=tTotTime, tTotPace=tTotPace, tAvgHeartrate=tAvgHeartrate, tAvgCadence=tAvgCadence, tAvgStep=tAvgStep, hSpeed=hSpeed, qSpeed=qSpeed, kmSpeed=kmSpeed, tSplit=split ) )
 
 # Determine average speed per x meter (used for split overview in main detailed screen, section 4)
 def avgSpeedperTrack(distance, time, interval, hr):
@@ -455,18 +456,22 @@ def getStravaUserID():
 		user = str(json_data['id'])
 		response = make_response( redirect('/list?user='+user) )
 		response.set_cookie('stravaUserID', str(user) )
-		
+
 	return(response)
+
 
 # get list of activities form Stava or cache
 def getStravaList(readCache, user):
+	if header == '':
+		a=1/0 # Header not defined
+
 	path = 'cache/'+user
 	if not os.path.exists(path):
 		os.mkdir(path) 
-
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
+	
+	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=20'
 	jsonFileName = os.path.join(path, "list.json")
-		
+	
 	if os.path.isfile(jsonFileName) and readCache:
 		file = open(jsonFileName, "r")
 		json_data = json.load(file)
@@ -476,8 +481,12 @@ def getStravaList(readCache, user):
 		file = open(jsonFileName,"w")
 		json.dump(json_data, file)
 		file.close()
+
+	if len(json_data) < 5:
+		a=1/0 # TODO invalid JSON data (list.json) could be from cache or from Strava
 		
 	return(json_data)
+
 
 # 
 def getCachedActivities(user):
@@ -495,13 +504,13 @@ def getCachedActivities(user):
 	return(json_data)
 
 # get activity data for detailed view
-def getStraveActivity(user, activityId):
+def getStraveActivity(user, activityId, refresh):
 
 	url = 'https://www.strava.com/api/v3/activities/'+str(activityId)
 	path = 'cache/'+user
 	
 	jsonFileName = os.path.join(path, "strava"+str(activityId)+"-a.json")
-	
+
 	if os.path.isfile(jsonFileName) and (refresh == 0):
 		file = open(jsonFileName, "r")
 		json_data = json.load(file)
@@ -514,6 +523,7 @@ def getStraveActivity(user, activityId):
 			file.close()
 		else:
 			# TODO this error is not caught in the calling function!
+			a=1/0
 			return( render_template('error.html', msg='Activity not found' ) )
 
 	return(json_data)
@@ -531,7 +541,7 @@ def getActivityCashed(user, actId):
 def getStravaTrackDetails(user,actId):
 	path = 'cache/'+user
 	jsonFileName = os.path.join(path, "strava"+str(actId)+"-d.json")
-	
+
 	if os.path.isfile(jsonFileName): # read activity from cache or get it from Strava
 		file = open(jsonFileName, "r")
 		json_data = json.load(file)
@@ -545,6 +555,7 @@ def getStravaTrackDetails(user,actId):
 			file.close()
 		else:
 			# TODO, this error is not caught in the calling function
+			b=1/0
 			return("Error, detailed track info fom Strava in wrong or unexpected format")
 	
 	return(json_data)
@@ -558,41 +569,71 @@ stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 
 # ---- ---- ---- ----
 
-parser = SafeConfigParser()
-parser.read('auth.ini')
-#print parser.sections()
-bearer_id = parser.get('strava', 'bearer_id')
-
-STRAVA_CLIENT_ID     = parser.get('strava', 'STRAVA_CLIENT_ID')
-STRAVA_CALLBACK_URL  = parser.get('strava', 'STRAVA_CALLBACK_URL')
-STRAVA_CLIENT_SECRET = parser.get('strava', 'STRAVA_CLIENT_SECRET')
+STRAVA_CLIENT_ID     = 'xxxx'
+STRAVA_CALLBACK_URL  = 'http://xxx.xxx.com/auth'
+STRAVA_CLIENT_SECRET = 'xxx'
 
 
-header = {'Authorization': 'Bearer {0}'.format(bearer_id)}
- 
- 
+header = ''
+  
 # ---- ---- ---- ----
 
 app = Flask(__name__)
 
-
-@app.route('/')
-def start():
-    return(getStravaUserID())
+app.secret_key = 'GeHeImPjE!'
+client = Client()
+token = ''
 
 @app.route('/login')
 def login():
-	return redirect(Client().authorization_url(client_id=1234, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
+	global header
+	
+	if session.get('access_token', None) is None:
+		return redirect(Client().authorization_url(client_id=STRAVA_CLIENT_ID, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
+	else:
+		token = session.get('access_token')
+		header = {'Authorization': 'Bearer {0}'.format(token)}
+	
+	# return('Login ready '+str(header))
+	
+	return(getStravaUserID())
 
 
 @app.route('/auth')
 def auth():
+	global header
+	
 	code = request.args.get('code')
-	client = Client()
-	access_token = client.exchange_code_for_token(client_id=STRAVA_CLIENT_ID, client_secret=STRAVA_CLIENT_SECRET,code=code)
-	return('auth ok')
+	token = Client().exchange_code_for_token(client_id=STRAVA_CLIENT_ID, client_secret=STRAVA_CLIENT_SECRET, code=code)
+
+	header = {'Authorization': 'Bearer {0}'.format(token)}
+
+	if token:
+		session['access_token'] = token
+		
+	url = 'https://www.strava.com/api/v3/athlete'
+	json_data = requests.get(url, headers=header).json()
+	user = str(json_data['id'])
+	return('<HTML> you are user:'+str(user)+'</html>')
+
+	return(getStravaUserID())
 
 
+@app.route('/test')
+def test():
+	url = 'https://www.strava.com/api/v3/athlete'
+	json_data = requests.get(url, headers=header).json()
+	user = str(json_data['id'])
+	return('<HTML> you are user:'+str(user)+'</html>')
+
+
+@app.route('/')
+def start():
+	if header == '':
+		return redirect('/login')
+	return(getStravaUserID())
+	
+	
 @app.route('/hello')
 def hello():
 	# use to test if Flask is running
@@ -602,6 +643,8 @@ def hello():
 @app.route('/strava')
 def strava():
 	# show one activity (details)
+	if header == '':
+		return redirect('/login')
 	
 	if ( not request.args.has_key('user') ):
 		return( make_response( redirect('/') ) )
@@ -621,8 +664,8 @@ def strava():
 	else:
 		refresh = 0
 
-	json_data = getStraveActivity(user, activityId)
-	
+	json_data = getStraveActivity(user, activityId, refresh)
+
 	activityName = json_data['name']
 	activityDate = json_data['start_date_local']
 
@@ -635,7 +678,9 @@ def strava():
 @app.route('/list')
 def list():
 	# show list of activities and include week- and month totals
-	
+	if header == '':
+		return redirect('/login')
+		
 	if ( not request.args.has_key('user') ):
 		return( make_response( redirect('/') ) )
 	
@@ -655,42 +700,6 @@ def list():
 	HTML_Body, HTML_Tots = createList(json_data, user, type)
 	
 	return( render_template('list_simple_frame.html', HTML_Header=HTML_Header, HTML_Body=HTML_Body, HTML_Tots=HTML_Tots) )
-
-
-# not used anymore?
-@app.route('/refresh')
-def refresh():
-
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=20'
-	jsonFileName = os.path.join("cache", "list.json")
-	
-	new_data = requests.get(url, headers=header).json()
-	file = open(jsonFileName,"w")
-	json.dump(new_data, file)
-	file.close()
-	
-	
-	for item in new_data:
-		if (item['type'] == 'Run'):
-			id = item['id']
-			
-			jsonFileName = os.path.join("cache", "strava" + str(item['id']) + "-a.json")
-			if not os.path.isfile(jsonFileName):
-				url = 'https://www.strava.com/api/v3/activities/'+str(id)
-				json_data = requests.get(url, headers=header).json()
-				file = open(jsonFileName,"w")
-				json.dump(json_data, file)
-				file.close()
-			
-			jsonFileName = os.path.join("cache", "strava"+str(item['id'])+"-d.json")
-			if not os.path.isfile(jsonFileName):
-				url = 'https://www.strava.com/api/v3/activities/'+str(id)+'/streams/time,distance,heartrate,cadence,moving'
-				json_data = requests.get(url, headers=header).json()	
-				file = open(jsonFileName,"w")
-				json.dump(json_data, file)
-				file.close()
-
-	return( cache() )
 
 
 @app.route('/cache')
@@ -716,4 +725,4 @@ def cache():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug = True)
+    app.run(host='0.0.0.0', port=8084, debug = True)

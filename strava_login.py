@@ -3,7 +3,13 @@
 from flask import Flask, request, session, redirect, url_for, flash, make_response
 from flask import render_template, render_template_string
 from stravalib import Client
-from config import SECRET_KEY, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_CALLBACK_URL
+
+#from config import SECRET_KEY, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_CALLBACK_URL
+
+SECRET_KEY = '1234567890'
+STRAVA_CLIENT_ID = '7144'
+STRAVA_CLIENT_SECRET = '8bface9d2280e2bcef999c692f2433019bc8fd3b'
+STRAVA_CALLBACK_URL = 'strava.ffkijken.com'
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -49,4 +55,4 @@ def athlete():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000, debug=True)
