@@ -1,6 +1,5 @@
-*.ini
 log
 cache
-.DS_Store
-*.pyc
-config.py
+.*
+auth.ini
+secret.py
