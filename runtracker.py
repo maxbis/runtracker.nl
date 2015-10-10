@@ -574,10 +574,10 @@ stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 #print parser.sections()
 #bearer_id = parser.get('strava', 'bearer_id')
 
-bearer_id = 'ea8bc2be740402a07e55a8dbe27074e66f4d26daXXX'
-STRAVA_CLIENT_ID     = '7144'
-STRAVA_CALLBACK_URL  = 'http://maxbiss.myqnapcloud.com:8084/auth'
-STRAVA_CLIENT_SECRET = '8bface9d2280e2bcef999c692f2433019bc8fd3b'
+bearer_id = 'XXXXXX'
+STRAVA_CLIENT_ID     = 'XXX'
+STRAVA_CALLBACK_URL  = 'http://maxbiss.XXX.com:8084/auth'
+STRAVA_CLIENT_SECRET = 'XXXXXX'
 
 #header = {'Authorization': 'Bearer {0}'.format(bearer_id)}
 #header = {'Authorization': 'Bearer %s' % bearer_id }
@@ -587,7 +587,7 @@ header = ''
 
 app = Flask(__name__)
 
-app.secret_key = 'GeHeImPjE!'
+app.secret_key = 'XXXXXX!'
 client = Client()
 token = ''
 
