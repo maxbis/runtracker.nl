@@ -445,7 +445,7 @@ def createXList(json_activity, user, type):
 
 # All functions get* do get data form Strava (or cache)
 
-# read cookie or call Strava to determine my userID
+# read cookie or call Strava to determine my userID and show list
 def getStravaUserID():
 	if 'stravaUserID' in request.cookies:
 		user = request.cookies.get("stravaUserID")
@@ -469,7 +469,7 @@ def getStravaList(readCache, user):
 	if not os.path.exists(path):
 		os.mkdir(path) 
 	
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=20'
+	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=100'
 	jsonFileName = os.path.join(path, "list.json")
 	
 	if os.path.isfile(jsonFileName) and readCache:
@@ -569,11 +569,18 @@ stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 
 # ---- ---- ---- ----
 
-STRAVA_CLIENT_ID     = 'xxxx'
-STRAVA_CALLBACK_URL  = 'http://xxx.xxx.com/auth'
-STRAVA_CLIENT_SECRET = 'xxx'
+#parser = SafeConfigParser()
+#parser.read('auth.ini')
+#print parser.sections()
+#bearer_id = parser.get('strava', 'bearer_id')
 
+bearer_id = 'ea8bc2be740402a07e55a8dbe27074e66f4d26daXXX'
+STRAVA_CLIENT_ID     = '7144'
+STRAVA_CALLBACK_URL  = 'http://maxbiss.myqnapcloud.com:8084/auth'
+STRAVA_CLIENT_SECRET = '8bface9d2280e2bcef999c692f2433019bc8fd3b'
 
+#header = {'Authorization': 'Bearer {0}'.format(bearer_id)}
+#header = {'Authorization': 'Bearer %s' % bearer_id }
 header = ''
   
 # ---- ---- ---- ----
@@ -596,7 +603,7 @@ def login():
 	
 	# return('Login ready '+str(header))
 	
-	return(getStravaUserID())
+	return redirect('/whoami')
 
 
 @app.route('/auth')
@@ -614,17 +621,19 @@ def auth():
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
-	return('<HTML> you are user:'+str(user)+'</html>')
+	return('<HTML> you are user: <a href="/">'+str(user)+'</html>')
 
-	return(getStravaUserID())
+	return redirect('/whoami')
 
-
-@app.route('/test')
-def test():
+# Start screen to confirm login and show menu
+@app.route('/whoami')
+def whoami():
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
-	return('<HTML> you are user:'+str(user)+'</html>')
+	
+	HTML = render_template('login.html', user=user)
+	return(HTML)
 
 
 @app.route('/')
