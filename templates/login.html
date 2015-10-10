@@ -1,27 +1,8 @@
-<html>
-<heaad>
-
-<TITLE>Strava Runtracker Login</TITLE>
- 
-<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
-
-</style>
-
-<div style="width: 1200px; margin: auto; background-color: #F0F0F0;">
-&nbsp;<a title="List runs from cache" class="button" href="/list?user={{user}}&refresh=1">List</a>
-&nbsp;<a title="Refresh list from Strava" class="button" href="/list?user={{user}}&refresh=0">List Refresh</a>
-&nbsp;&nbsp;<a title="Get cached details" class="button" href="/cache?user={{user}}">Overview All</a>
-&nbsp;<a title="Get cached details" class="button" href="/cache?user={{user}}&type=1">Overview Races</a>
-&nbsp;<a title="Get cached details" class="button" href="/cache?user={{user}}&type=2">Overview Long Runs</a>
-</div>
-
-</head>
 
 <body>
-<div style="width: 600; margin: auto; background-color: #F0F0F0;">
-<h3>You are logged as Strava user: {{user}}</h3>
+
+<div style="width: 400; margin: auto; background-color: #F0F0F0;">
+<p>You are logged in as Strava user: {{user}}</p>
 </div>
 </body>
 
-</html>

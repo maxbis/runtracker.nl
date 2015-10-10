@@ -569,25 +569,15 @@ stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 
 # ---- ---- ---- ----
 
-#parser = SafeConfigParser()
-#parser.read('auth.ini')
-#print parser.sections()
-#bearer_id = parser.get('strava', 'bearer_id')
+from secret import *
 
-bearer_id = 'XXXXXX'
-STRAVA_CLIENT_ID     = 'XXX'
-STRAVA_CALLBACK_URL  = 'http://maxbiss.XXX.com:8084/auth'
-STRAVA_CLIENT_SECRET = 'XXXXXX'
-
-#header = {'Authorization': 'Bearer {0}'.format(bearer_id)}
-#header = {'Authorization': 'Bearer %s' % bearer_id }
 header = ''
   
 # ---- ---- ---- ----
 
 app = Flask(__name__)
 
-app.secret_key = 'XXXXXX!'
+app.secret_key = APP_SECRET_KEY
 client = Client()
 token = ''
 
@@ -600,9 +590,7 @@ def login():
 	else:
 		token = session.get('access_token')
 		header = {'Authorization': 'Bearer {0}'.format(token)}
-	
-	# return('Login ready '+str(header))
-	
+		
 	return redirect('/whoami')
 
 
@@ -621,9 +609,9 @@ def auth():
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
-	return('<HTML> you are user: <a href="/">'+str(user)+'</html>')
 
 	return redirect('/whoami')
+
 
 # Start screen to confirm login and show menu
 @app.route('/whoami')
@@ -632,7 +620,8 @@ def whoami():
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
 	
-	HTML = render_template('login.html', user=user)
+	HTML = render_template('header.html', user=user)
+	HTML = HTML + render_template('login.html', user=user)
 	return(HTML)
 
 

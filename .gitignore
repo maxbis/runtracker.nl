@@ -2,4 +2,4 @@ log
 cache
 .*
 auth.ini
-secret.py
+secret*
