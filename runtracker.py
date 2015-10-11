@@ -394,7 +394,7 @@ def createList(json_data, user, type):
 	for i in reversed(sorted(totalsWeek.keys())):
 		thisWeek = int(i.split()[1])
 		lWeekTots.append([ thisWeek, "%4.1f" % (totalsWeek[i]/1000) ])
-		if len(lWeekTots) == 6:
+		if len(lWeekTots) == 8:
 			break
 		
 	lYearTots = []	
@@ -457,7 +457,7 @@ def createXList(json_activity, user, type):
 	return(HTML)
 
 
-
+# ---- ---- ---- ----
 # All functions get* do get data form Strava (or cache)
 
 # read cookie or call Strava to determine my userID and show list
