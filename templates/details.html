@@ -73,7 +73,7 @@
 </td><tr><td>
 
     <!-- HEART RATE ZONES -->
-	<table class="summary">
+	<table class="summary" border=0>
 	<tr>
 	   <td class="head" colspan=4>Heart Rate Zones; averge {{ tAvgHeartrate }}</td>
 	   <td class="head" style="width: 50px; text-align: right;">Time</td>
@@ -89,12 +89,12 @@
 	  {% endif %}	
 	  </td>
 	  
-	  	<td style="color: grey;  text-align: right;">{{ elem.z1 }}</td>
+	  	<td style="color: grey;  text-align: right; width: 30px;">{{ elem.z1 }}</td>
 	  	
 		  {% if elem.z2 != 999 %}
-		  	<td style="color: grey;  text-align: left;"> - {{ elem.z2 }}&nbsp;</td>
+		  	<td style="color: grey;  text-align: left; width: 40px;">- {{ elem.z2 }}&nbsp;</td>
 		  {% else %}
-		    <td style="color: grey;  text-align: left;"> - &infin;&nbsp;</td>
+		    <td style="color: grey;  text-align: left; width: 40px;">- &infin;&nbsp;</td>
 		  {% endif %}
 	 
 	  <td with=300px bgcolor=#F8F8F8>
@@ -264,8 +264,8 @@
 			</canvas>
 			{% endif %}
 		{% endif %}
-		
-		{% if elem.hr > 0 %}
+		<!--- HTLM5 does not draw a 1 px hight HR line, switch code off for now (1000 shoudl be 0 to enable) -->
+		{% if elem.hr > 1000 %}
 		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
 		{% endif %}
 		</td>
@@ -296,7 +296,8 @@
 			</canvas>
 			{% endif %}
 		{% endif %}
-		{% if elem.hr > 0 %}
+		<!--- HTLM5 does not draw a 1 px hight HR line, switch code off for now (1000 shoudl be 0 to enable) -->
+		{% if elem.hr > 10000 %}
 		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
 		{% endif %}
 		</td>
@@ -337,8 +338,9 @@
 			{% endif %}
 		{% endif %}
 	
-		{% if elem.hr > 0 %}
-			<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
+		<!--- HTLM5 does not draw a 1 px hight HR line, switch code off for now (1000 shoudl be 0 to enable) -->
+		{% if elem.hr > 1000 %}
+			<br><canvas id="myCanvas" height="1" width="{{ (elem.hr-100)*4 }}" style="background-color: LightCoral;"></canvas>
 		{% endif %}
 		</td>
 		

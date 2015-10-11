@@ -349,6 +349,7 @@ def createList(json_data, user, type):
 	HTML_Body = ""
 	totalsMonth = {}
 	totalsWeek = {}
+	totalsYear = {}
 
 	for item in json_data:
 		if item['type'] == 'Run':
@@ -371,6 +372,12 @@ def createList(json_data, user, type):
 					totalsWeek[yearWeek] = 0
 				totalsWeek[yearWeek] = totalsWeek[yearWeek] + item['distance']
 				
+				# NEW Year totals
+				thisYear = str(runDate.year)
+				if thisYear not in totalsYear.keys():
+					totalsYear[thisYear] = 0
+				totalsYear[thisYear] = totalsYear[thisYear] +  item['distance']
+				
 				# Does the cache contains this activity?
 				tCache = getActivityCashed(user, item['id'])
 
@@ -385,13 +392,19 @@ def createList(json_data, user, type):
 			
 	lWeekTots = []
 	for i in reversed(sorted(totalsWeek.keys())):
-
 		thisWeek = int(i.split()[1])
 		lWeekTots.append([ thisWeek, "%4.1f" % (totalsWeek[i]/1000) ])
 		if len(lWeekTots) == 6:
 			break
+		
+	lYearTots = []	
+	for i in reversed(sorted(totalsYear.keys())):
+		thisYear = int(i)
+		lYearTots.append([ thisYear, "%5.0f" % (totalsYear[i]/1000) ])
+		if len(lYearTots) == 1:
+			break
 
-	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots)
+	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots, lYearTots=lYearTots)
 
 	return(HTML_Body, HTML_Tots)
 
@@ -443,6 +456,8 @@ def createXList(json_activity, user, type):
 	
 	return(HTML)
 
+
+
 # All functions get* do get data form Strava (or cache)
 
 # read cookie or call Strava to determine my userID and show list
@@ -459,7 +474,6 @@ def getStravaUserID():
 
 	return(response)
 
-
 # get list of activities form Stava or cache
 def getStravaList(readCache, user):
 	if header == '':
@@ -469,7 +483,7 @@ def getStravaList(readCache, user):
 	if not os.path.exists(path):
 		os.mkdir(path) 
 	
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=100'
+	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
 	jsonFileName = os.path.join(path, "list.json")
 	
 	if os.path.isfile(jsonFileName) and readCache:
@@ -487,8 +501,7 @@ def getStravaList(readCache, user):
 		
 	return(json_data)
 
-
-# 
+# Get cached Activities 
 def getCachedActivities(user):
 	path = 'cache/'+user+'/'
 	json_data =[]
@@ -555,8 +568,7 @@ def getStravaTrackDetails(user,actId):
 			file.close()
 		else:
 			# TODO, this error is not caught in the calling function
-			b=1/0
-			return("Error, detailed track info fom Strava in wrong or unexpected format")
+			raise Exception('getStravaTrackDetails: The Stava activity '+str(actId)+' returns empty details (manual entry?)')
 	
 	return(json_data)
 
@@ -580,6 +592,11 @@ app = Flask(__name__)
 app.secret_key = APP_SECRET_KEY
 client = Client()
 token = ''
+
+#@app.errorhandler(Exception)
+#def all_exception_handler(error):
+#	HTML = render_template('error.html', error=error)
+#	return(HTML)
 
 @app.route('/login')
 def login():
