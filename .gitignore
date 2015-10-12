@@ -3,4 +3,4 @@ log
 cache
 .DS_Store
 *.pyc
-config.py
+instance

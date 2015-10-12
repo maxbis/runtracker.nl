@@ -4,7 +4,6 @@ from flask import request
 from flask import make_response
 from flask import redirect
 from flask import redirect, session
-from ConfigParser import SafeConfigParser
 from stravalib import Client
 
 import requests
@@ -567,34 +566,26 @@ hrZones  = [ 0,  95, 114, 133, 152, 171, 190 ]
 cadZones = [ 0, 140, 150, 155, 160, 165, 170, 175, 180, 185 ]
 stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 
-# ---- ---- ---- ----
-
-STRAVA_CLIENT_ID     = 'xxxx'
-STRAVA_CALLBACK_URL  = 'http://xxx.xxx.com/auth'
-STRAVA_CLIENT_SECRET = 'xxx'
-
-
 header = ''
   
 # ---- ---- ---- ----
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 
-app.secret_key = 'GeHeImPjE!'
+app.secret_key = app.config['SECRET_KEY']
 client = Client()
 token = ''
+app.config.from_pyfile('config.py')
 
 @app.route('/login')
 def login():
 	global header
 	
 	if session.get('access_token', None) is None:
-		return redirect(Client().authorization_url(client_id=STRAVA_CLIENT_ID, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
+		return redirect(Client().authorization_url(client_id=app.config["STRAVA_CLIENT_ID"], redirect_uri=app.config["STRAVA_CALLBACK_URL"], scope="view_private"))
 	else:
 		token = session.get('access_token')
 		header = {'Authorization': 'Bearer {0}'.format(token)}
-	
-	# return('Login ready '+str(header))
 	
 	return(getStravaUserID())
 
@@ -604,7 +595,7 @@ def auth():
 	global header
 	
 	code = request.args.get('code')
-	token = Client().exchange_code_for_token(client_id=STRAVA_CLIENT_ID, client_secret=STRAVA_CLIENT_SECRET, code=code)
+	token = Client().exchange_code_for_token(client_id=app.config["STRAVA_CLIENT_ID"], client_secret=app.config["STRAVA_CLIENT_SECRET"], code=code)
 
 	header = {'Authorization': 'Bearer {0}'.format(token)}
 
@@ -619,26 +610,12 @@ def auth():
 	return(getStravaUserID())
 
 
-@app.route('/test')
-def test():
-	url = 'https://www.strava.com/api/v3/athlete'
-	json_data = requests.get(url, headers=header).json()
-	user = str(json_data['id'])
-	return('<HTML> you are user:'+str(user)+'</html>')
-
-
 @app.route('/')
 def start():
 	if header == '':
 		return redirect('/login')
 	return(getStravaUserID())
 	
-	
-@app.route('/hello')
-def hello():
-	# use to test if Flask is running
-	return 'Hello World'
-
 
 @app.route('/strava')
 def strava():
