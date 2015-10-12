@@ -1,5 +1,11 @@
 log
 cache
+<<<<<<< HEAD
+.DS_Store
+*.pyc
+instance
+=======
 .*
 auth.ini
 secret*
+>>>>>>> c4b28cf3818a47020255bc0a113204562469ef69
