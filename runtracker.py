@@ -409,7 +409,7 @@ def createList(json_data, user, type):
 	return(HTML_Body, HTML_Tots)
 
 # create overview page and use cached details to enrich overview (fastest 1000 m. after 25%)
-def createXList(json_activity, user, type):
+def createXList(json_activity, user, type, sDistance):
 	# Create overview page
 
 	weekday = ['Mo','Tu','We','Th','Fr','Sa','Su']
@@ -417,9 +417,13 @@ def createXList(json_activity, user, type):
 	tTrack=[ "", "" ]
 	tAverageHr = 0
 	path = 'cache/'+user+'/'
+	low,up=sDistance.split('-')
 	
 	for item in json_activity:
 		if item['type'] == 'Run':
+			# Select distance between low and up (default 0 and 999)
+			if (item['distance']/1000) < int(low) or (item['distance']/1000) > int(up):
+				continue
 			if ( int(type) == 0 or item['workout_type'] == int(type) ):
 				runDate = datetime.datetime(*map(int, re.split('[^\d]', item['start_date_local'])[:-1]))
 				tWeekDay = weekday[runDate.weekday()]
@@ -452,7 +456,7 @@ def createXList(json_activity, user, type):
 					tTrack = [ mmss(minTime), avgHRTrack ]
 					
 				
-				HTML =  HTML + render_template('overview.html', item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
+				HTML =  HTML + render_template('overview.html', user=user, item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
 	
 	return(HTML)
 
@@ -730,11 +734,17 @@ def cache():
 		type = request.args['type']
 	else:
 		type = 0
+	
+	# Distance selection d=3-4 selects distances >=3 and <=4
+	if (request.args.has_key('d')):
+		sDistance = request.args['d']
+	else:
+		sDistance = '0-999'
 
 	json_data = getCachedActivities(user)
 	
 	HTML = render_template('header.html', user=user)
-	HTML = HTML + createXList(json_data, user, type)
+	HTML = HTML + createXList(json_data, user, type, sDistance)
 		
 	return( HTML )
 
