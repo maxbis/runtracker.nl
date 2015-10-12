@@ -242,7 +242,15 @@
 	<td class="head"></td>
 	</tr>
 	
-<tr><td style="color: grey;" colspan=7>&nbsp;Splits</td></tr>
+<tr><td style="color: grey;" colspan=6>&nbsp;Splits</td>
+<td style="color: Grey;">
+6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
+</td>
+
+</tr>
 
 	{% for elem in hSpeed %}
 	<tr>
@@ -254,7 +262,7 @@
 		<td width=30px style="color:DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
 		
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
-		<td bgcolor=#F8F8F8>
+		<td class="stripe-7" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
 			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="13" style="background-color: limeGreen;">
@@ -273,8 +281,16 @@
 	</tr>
 	{% endfor %}
 	
-<tr><td style="color: grey;"colspan=7>&nbsp;Quarter Splits</td>
+<tr><td style="color: grey;"colspan=6>&nbsp;Quarter Splits</td>
+<td style="color: Grey;">
+6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
+</td>
+
 </tr>
+
 	
 	{% for elem in qSpeed %}
 	<tr>
@@ -286,7 +302,7 @@
 		<td width=30px style="color: DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
 		
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
-		<td bgcolor=#F8F8F8>
+		<td class="stripe-7" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
 			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9px" style="background-color: limeGreen;">
@@ -305,7 +321,13 @@
 	</tr>
 	{% endfor %}
 	
-<tr><td style="color: grey;"colspan=7>{{tSplit}} m. Splits
+<tr><td style="color: grey;"colspan=6>{{tSplit}} m. Splits
+</td>
+<td style="color: Grey;">
+6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
 </td>
 </tr>
 	
@@ -327,7 +349,7 @@
 		<td width=30px style="color: DarkGreen; text-align: right;">&nbsp;{{ elem.dev }}</td>
 
 		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
-		<td bgcolor=#F8F8F8>
+		<td class="stripe-7" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
 			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="6" style="background-color: limeGreen;">
