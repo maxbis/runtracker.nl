@@ -180,7 +180,7 @@ def initList(list):
 	return(newList)
 	
 # Main routine to start analysing data
-def analyseActivity(user, header, id, name, date, split):
+def analyseActivity(user, id, name, date, split):
 	
 	json_data = getStravaTrackDetails(user,id)
 	
@@ -285,7 +285,6 @@ def analyseActivity(user, header, id, name, date, split):
 
 # Determine average speed per x meter (used for split overview in main detailed screen, section 4)
 def avgSpeedperTrack(distance, time, interval, hr):
-	
 	
 	thisInterval = 1
 	prev = 0
@@ -409,7 +408,7 @@ def createList(json_data, user, type):
 	return(HTML_Body, HTML_Tots)
 
 # create overview page and use cached details to enrich overview (fastest 1000 m. after 25%)
-def createXList(json_activity, user, type, sDistance):
+def createOverview(json_activity, user, type, sDistance):
 	# Create overview page
 
 	weekday = ['Mo','Tu','We','Th','Fr','Sa','Su']
@@ -418,6 +417,7 @@ def createXList(json_activity, user, type, sDistance):
 	tAverageHr = 0
 	path = 'cache/'+user+'/'
 	low,up=sDistance.split('-')
+	count = 0
 	
 	for item in json_activity:
 		if item['type'] == 'Run':
@@ -425,6 +425,9 @@ def createXList(json_activity, user, type, sDistance):
 			if (item['distance']/1000) < int(low) or (item['distance']/1000) > int(up):
 				continue
 			if ( int(type) == 0 or item['workout_type'] == int(type) ):
+				count = count + 1
+				if count > 20:
+					break
 				runDate = datetime.datetime(*map(int, re.split('[^\d]', item['start_date_local'])[:-1]))
 				tWeekDay = weekday[runDate.weekday()]
 				tRunDate = runDate.strftime("%d %b %Y, %H:%M")
@@ -456,7 +459,7 @@ def createXList(json_activity, user, type, sDistance):
 					tTrack = [ mmss(minTime), avgHRTrack ]
 					
 				
-				HTML =  HTML + render_template('overview.html', user=user, item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
+				HTML =  HTML + render_template('overview.html', count=count, user=user, item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
 	
 	return(HTML)
 
@@ -470,6 +473,7 @@ def getStravaUserID():
 		user = request.cookies.get("stravaUserID")
 		response = make_response( redirect('/list?user='+str(user)) )
 	else:
+		header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
 		url = 'https://www.strava.com/api/v3/athlete'
 		json_data = requests.get(url, headers=header).json()
 		user = str(json_data['id'])
@@ -480,14 +484,10 @@ def getStravaUserID():
 
 # get list of activities form Stava or cache
 def getStravaList(readCache, user):
-	if header == '':
-		a=1/0 # Header not defined
-
 	path = 'cache/'+user
 	if not os.path.exists(path):
 		os.mkdir(path) 
 	
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
 	jsonFileName = os.path.join(path, "list.json")
 	
 	if os.path.isfile(jsonFileName) and readCache:
@@ -495,13 +495,12 @@ def getStravaList(readCache, user):
 		json_data = json.load(file)
 		file.close()
 	else:
+		header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
+		url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
 		json_data = requests.get(url, headers=header).json()
 		file = open(jsonFileName,"w")
 		json.dump(json_data, file)
 		file.close()
-
-	if len(json_data) < 5:
-		a=1/0 # TODO invalid JSON data (list.json) could be from cache or from Strava
 		
 	return(json_data)
 
@@ -523,6 +522,7 @@ def getCachedActivities(user):
 # get activity data for detailed view
 def getStraveActivity(user, activityId, refresh):
 
+	header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
 	url = 'https://www.strava.com/api/v3/activities/'+str(activityId)
 	path = 'cache/'+user
 	
@@ -564,6 +564,7 @@ def getStravaTrackDetails(user,actId):
 		json_data = json.load(file)
 		file.close()
 	else:
+		header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
 		url = 'https://www.strava.com/api/v3/activities/'+str(actId)+'/streams/time,distance,heartrate,cadence,moving'
 		json_data = requests.get(url, headers=header).json()
 		if len(json_data) > 3:
@@ -586,8 +587,6 @@ stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 # ---- ---- ---- ----
 
 from secret import *
-
-header = ''
   
 # ---- ---- ---- ----
 
@@ -602,6 +601,7 @@ token = ''
 #	HTML = render_template('error.html', error=error)
 #	return(HTML)
 
+
 @app.route('/login')
 def login():
 	global header
@@ -610,23 +610,19 @@ def login():
 		return redirect(Client().authorization_url(client_id=STRAVA_CLIENT_ID, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
 	else:
 		token = session.get('access_token')
-		header = {'Authorization': 'Bearer {0}'.format(token)}
 		
 	return redirect('/whoami')
 
 
 @app.route('/auth')
 def auth():
-	global header
-	
 	code = request.args.get('code')
 	token = Client().exchange_code_for_token(client_id=STRAVA_CLIENT_ID, client_secret=STRAVA_CLIENT_SECRET, code=code)
 
-	header = {'Authorization': 'Bearer {0}'.format(token)}
-
 	if token:
 		session['access_token'] = token
-		
+	
+	header = {'Authorization': 'Bearer {0}'.format(token)}
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
@@ -637,6 +633,10 @@ def auth():
 # Start screen to confirm login and show menu
 @app.route('/whoami')
 def whoami():
+	if session.get('access_token', None) is None:
+		return("Not logged in")
+		
+	header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
@@ -648,7 +648,7 @@ def whoami():
 
 @app.route('/')
 def start():
-	if header == '':
+	if session.get('access_token', None) is None:
 		return redirect('/login')
 	return(getStravaUserID())
 	
@@ -662,7 +662,7 @@ def hello():
 @app.route('/strava')
 def strava():
 	# show one activity (details)
-	if header == '':
+	if session.get('access_token', None) is None:
 		return redirect('/login')
 	
 	if ( not request.args.has_key('user') ):
@@ -689,7 +689,7 @@ def strava():
 	activityDate = json_data['start_date_local']
 
 	HTML = render_template('header.html', user=user)
-	HTML = HTML + analyseActivity(user, header, activityId, activityName, activityDate, split) 
+	HTML = HTML + analyseActivity(user, activityId, activityName, activityDate, split) 
 	
 	return( HTML )
 	
@@ -697,14 +697,14 @@ def strava():
 @app.route('/list')
 def list():
 	# show list of activities and include week- and month totals
-	if header == '':
+	if session.get('access_token', None) is None:
 		return redirect('/login')
-		
+	
 	if ( not request.args.has_key('user') ):
 		return( make_response( redirect('/') ) )
 	
 	user = request.args['user']
-	
+
 	readCache = 1
 	if (request.args.has_key('refresh')):
 		readCache = int(request.args['refresh'])
@@ -712,9 +712,9 @@ def list():
 		type = request.args['type']
 	else:
 		type = 0
-		
+
 	json_data = getStravaList(readCache, user)	
-	
+
 	HTML_Header = render_template('header.html', user=user)
 	HTML_Body, HTML_Tots = createList(json_data, user, type)
 	
@@ -744,7 +744,7 @@ def cache():
 	json_data = getCachedActivities(user)
 	
 	HTML = render_template('header.html', user=user)
-	HTML = HTML + createXList(json_data, user, type, sDistance)
+	HTML = HTML + createOverview(json_data, user, type, sDistance)
 		
 	return( HTML )
 

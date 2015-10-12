@@ -17,7 +17,7 @@
 			<img src="static/pin_small.png" alt="Cached" height="12" width="12">
 		{% endif %}
 	
-		<a href=/strava?user={{user}}&id={{ item.id }} style="color: {{ color }};">
+		{{count}} - <a href=/strava?user={{user}}&id={{ item.id }} style="color: {{ color }};">
 		{% if item.workout_type == 1 or item.workout_type == 2 %}
 			<b>{{ item.name }}</b>
 		{% else %}
