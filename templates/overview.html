@@ -3,29 +3,47 @@
 	
 <tr>
 	{% if item.workout_type == 1 %}
-		<td colspan=8 style="color: Red;">
-		<a href=/strava?id={{ item.id }} style="color: Red;"><b>{{ item.name }}</b></a>
+    	{% set color = "Red" %}
 	{% else %}
 		{% if item.workout_type == 2 %}
-			<td colspan=8 style="color: Green;">
-			<a href=/strava?id={{ item.id }} style="color: Green;"><b>{{ item.name }}</b></a>
+			{% set color = "Green" %}
 		{% else %}
-			<td colspan=8 style="color: Black;">
-			<a href=/strava?id={{ item.id }} style="color: Black;">{{ item.name }}</a>
+			{% set color = "Black" %}
 		{% endif %}
 	{% endif %}
-		 - {{ item.location_city }} 
+
+	<td colspan=8 style="color: {{ color }}; text-align: left;">
+		{% if tCache == 1 %}
+			<img src="static/pin_small.png" alt="Cached" height="12" width="12">
+		{% endif %}
+	
+		<a href=/strava?user={{user}}&id={{ item.id }} style="color: {{ color }};">
+		{% if item.workout_type == 1 or item.workout_type == 2 %}
+			<b>{{ item.name }}</b>
+		{% else %}
+			{{ item.name }}
+		{% endif %}
+		</a>
+		- {{ item.location_city }} 
 		 <!-- - {{item.workout_type}} - {{item.id}} -->
 	</td>
+	
+	<td colspan=1 style="color: Grey; text-align: right;">
+		<a href="https://www.strava.com/activities/+{{ item.id }}" target="_blank" style="text-decoration:none; color:#808080; font: 9px sans-serif;">(Strava)</a>
+	</td>
+	
 </tr>
 	
 <tr>
 	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
-	  <td class="summary" width=140>Date</td><td class="summary" width=140px>{{ tRunDate }}</td>
+	  <td class="summary" width=140>Date</td>
+	  <td class="summary" width=140px>{{ tRunDate }}</td>
 	  <td width=40px>&nbsp;&nbsp;&nbsp;</td>
-	  <td class="summary" width=140px>Total Track</td><td class="summary width=140px"><b>{{tDistance}}</b> km</td>
+	  <td class="summary" width=140px>Total Track</td>
+	  <td class="summary width=140px"><b>{{tDistance}}</b> km</td>
 	  <td width=20px>&nbsp;&nbsp;&nbsp;</td>
-	  <td class="summary" width=140px>Fastest km after 25%</td><td class="summary width=140px">{{ tTrack[0] }} km</td>
+	  <td class="summary" width=140px>Fastest km after 25%</td>
+	  <td class="summary width=140px">{{ tTrack[0] }} km</td>
 </tr>
 
 <tr>

@@ -1,4 +1,5 @@
-<heaad>
+
+<head>
 
 <TITLE>Strava Runtracker</TITLE>
  
@@ -18,6 +19,7 @@ td.summary {
   border-left: none;
   border-right: none;
   padding: 5px;
+  text-align: left;
 }
 
 td.head {
@@ -68,7 +70,7 @@ a:hover, a:active {
 
 </style>
 
-<div style="width: 1200px; margin: auto; background-color: #F0F0F0;">
+<div style="margin: auto; background-color: #F0F0F0;">
 &nbsp;<a title="List runs from cache" class="button" href="/list?user={{user}}&refresh=1">List</a>
 &nbsp;<a title="Refresh list from Strava" class="button" href="/list?user={{user}}&refresh=0">List Refresh</a>
 &nbsp;&nbsp;<a title="Get cached details" class="button" href="/cache?user={{user}}">Overview All</a>

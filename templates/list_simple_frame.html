@@ -1,13 +1,20 @@
 {% autoescape false %}
 
-{{ HTML_Header }}
+<!DOCTYPE html>
+
 <body>
+
 <table border=0>
 <tr>
-<td class="totals" width=70%>{{ HTML_Body }}</td>
-<td class="totals">{{ HTML_Tots }}</td>
+<td colspan=2>{{ HTML_Header }}</td>
+</tr>
+
+<tr>
+	<td style="vertical-align: top;">{{ HTML_Body }}</td>
+	<td style="vertical-align: top;">{{ HTML_Tots }}</td>
 </tr>
 </table>
+
 </body>
 
 {% endautoescape %}

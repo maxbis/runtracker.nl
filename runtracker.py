@@ -348,6 +348,7 @@ def createList(json_data, user, type):
 	HTML_Body = ""
 	totalsMonth = {}
 	totalsWeek = {}
+	totalsYear = {}
 
 	for item in json_data:
 		if item['type'] == 'Run':
@@ -370,6 +371,12 @@ def createList(json_data, user, type):
 					totalsWeek[yearWeek] = 0
 				totalsWeek[yearWeek] = totalsWeek[yearWeek] + item['distance']
 				
+				# NEW Year totals
+				thisYear = str(runDate.year)
+				if thisYear not in totalsYear.keys():
+					totalsYear[thisYear] = 0
+				totalsYear[thisYear] = totalsYear[thisYear] +  item['distance']
+				
 				# Does the cache contains this activity?
 				tCache = getActivityCashed(user, item['id'])
 
@@ -384,18 +391,24 @@ def createList(json_data, user, type):
 			
 	lWeekTots = []
 	for i in reversed(sorted(totalsWeek.keys())):
-
 		thisWeek = int(i.split()[1])
 		lWeekTots.append([ thisWeek, "%4.1f" % (totalsWeek[i]/1000) ])
-		if len(lWeekTots) == 6:
+		if len(lWeekTots) == 8:
+			break
+		
+	lYearTots = []	
+	for i in reversed(sorted(totalsYear.keys())):
+		thisYear = int(i)
+		lYearTots.append([ thisYear, "%5.0f" % (totalsYear[i]/1000) ])
+		if len(lYearTots) == 1:
 			break
 
-	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots)
+	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots, lYearTots=lYearTots)
 
 	return(HTML_Body, HTML_Tots)
 
 # create overview page and use cached details to enrich overview (fastest 1000 m. after 25%)
-def createXList(json_activity, user, type):
+def createXList(json_activity, user, type, sDistance):
 	# Create overview page
 
 	weekday = ['Mo','Tu','We','Th','Fr','Sa','Su']
@@ -403,9 +416,13 @@ def createXList(json_activity, user, type):
 	tTrack=[ "", "" ]
 	tAverageHr = 0
 	path = 'cache/'+user+'/'
+	low,up=sDistance.split('-')
 	
 	for item in json_activity:
 		if item['type'] == 'Run':
+			# Select distance between low and up (default 0 and 999)
+			if (item['distance']/1000) < int(low) or (item['distance']/1000) > int(up):
+				continue
 			if ( int(type) == 0 or item['workout_type'] == int(type) ):
 				runDate = datetime.datetime(*map(int, re.split('[^\d]', item['start_date_local'])[:-1]))
 				tWeekDay = weekday[runDate.weekday()]
@@ -438,13 +455,15 @@ def createXList(json_activity, user, type):
 					tTrack = [ mmss(minTime), avgHRTrack ]
 					
 				
-				HTML =  HTML + render_template('overview.html', item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
+				HTML =  HTML + render_template('overview.html', user=user, item=item, tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tAverageHr=tAverageHr, tMovingTime=tMovingTime, tPause=mmss(notMoving), tTrack=tTrack )
 	
 	return(HTML)
 
+
+# ---- ---- ---- ----
 # All functions get* do get data form Strava (or cache)
 
-# read cookie or call Strava to determine my userID
+# read cookie or call Strava to determine my userID and show list
 def getStravaUserID():
 	if 'stravaUserID' in request.cookies:
 		user = request.cookies.get("stravaUserID")
@@ -458,7 +477,6 @@ def getStravaUserID():
 
 	return(response)
 
-
 # get list of activities form Stava or cache
 def getStravaList(readCache, user):
 	if header == '':
@@ -468,7 +486,7 @@ def getStravaList(readCache, user):
 	if not os.path.exists(path):
 		os.mkdir(path) 
 	
-	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=20'
+	url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
 	jsonFileName = os.path.join(path, "list.json")
 	
 	if os.path.isfile(jsonFileName) and readCache:
@@ -486,8 +504,7 @@ def getStravaList(readCache, user):
 		
 	return(json_data)
 
-
-# 
+# Get cached Activities 
 def getCachedActivities(user):
 	path = 'cache/'+user+'/'
 	json_data =[]
@@ -554,8 +571,7 @@ def getStravaTrackDetails(user,actId):
 			file.close()
 		else:
 			# TODO, this error is not caught in the calling function
-			b=1/0
-			return("Error, detailed track info fom Strava in wrong or unexpected format")
+			raise Exception('getStravaTrackDetails: The Stava activity '+str(actId)+' returns empty details (manual entry?)')
 	
 	return(json_data)
 
@@ -566,16 +582,32 @@ hrZones  = [ 0,  95, 114, 133, 152, 171, 190 ]
 cadZones = [ 0, 140, 150, 155, 160, 165, 170, 175, 180, 185 ]
 stepZones= [ 0, 100, 110, 120, 130, 140, 150, 160, 170, 180 ]
 
+<<<<<<< HEAD
+=======
+# ---- ---- ---- ----
+
+from secret import *
+
+>>>>>>> c4b28cf3818a47020255bc0a113204562469ef69
 header = ''
   
 # ---- ---- ---- ----
 
 app = Flask(__name__, instance_relative_config=True)
 
+<<<<<<< HEAD
 app.secret_key = app.config['SECRET_KEY']
+=======
+app.secret_key = APP_SECRET_KEY
+>>>>>>> c4b28cf3818a47020255bc0a113204562469ef69
 client = Client()
 token = ''
 app.config.from_pyfile('config.py')
+
+#@app.errorhandler(Exception)
+#def all_exception_handler(error):
+#	HTML = render_template('error.html', error=error)
+#	return(HTML)
 
 @app.route('/login')
 def login():
@@ -586,8 +618,13 @@ def login():
 	else:
 		token = session.get('access_token')
 		header = {'Authorization': 'Bearer {0}'.format(token)}
+<<<<<<< HEAD
 	
 	return(getStravaUserID())
+=======
+		
+	return redirect('/whoami')
+>>>>>>> c4b28cf3818a47020255bc0a113204562469ef69
 
 
 @app.route('/auth')
@@ -605,11 +642,25 @@ def auth():
 	url = 'https://www.strava.com/api/v3/athlete'
 	json_data = requests.get(url, headers=header).json()
 	user = str(json_data['id'])
-	return('<HTML> you are user:'+str(user)+'</html>')
 
-	return(getStravaUserID())
+	return redirect('/whoami')
 
 
+<<<<<<< HEAD
+=======
+# Start screen to confirm login and show menu
+@app.route('/whoami')
+def whoami():
+	url = 'https://www.strava.com/api/v3/athlete'
+	json_data = requests.get(url, headers=header).json()
+	user = str(json_data['id'])
+	
+	HTML = render_template('header.html', user=user)
+	HTML = HTML + render_template('login.html', user=user)
+	return(HTML)
+
+
+>>>>>>> c4b28cf3818a47020255bc0a113204562469ef69
 @app.route('/')
 def start():
 	if header == '':
@@ -692,11 +743,17 @@ def cache():
 		type = request.args['type']
 	else:
 		type = 0
+	
+	# Distance selection d=3-4 selects distances >=3 and <=4
+	if (request.args.has_key('d')):
+		sDistance = request.args['d']
+	else:
+		sDistance = '0-999'
 
 	json_data = getCachedActivities(user)
 	
 	HTML = render_template('header.html', user=user)
-	HTML = HTML + createXList(json_data, user, type)
+	HTML = HTML + createXList(json_data, user, type, sDistance)
 		
 	return( HTML )
 
