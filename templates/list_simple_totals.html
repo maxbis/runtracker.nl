@@ -8,7 +8,7 @@
     </td></tr>
     {% for elem in lWeekTots %}
     <tr>
-    <td class="summary" align="right" width="40px">{{ elem[0] }}</td>
+    <td class="summary" align="right" width="40px"><a href="/list?user={{user}}&refresh=1&yw={{elem[2]}}">{{ elem[0] }}</a></td>
     <td class="summary" align="right" width="70px">{{ elem[1] }} km</td>
     </tr>
     {% endfor %}
@@ -24,7 +24,7 @@
     </td></tr>
     {% for elem in lMonthTots %}
     <tr>
-    <td class="summary" align="right" width="40px">{{ elem[0] }}</td>
+    <td class="summary" align="right" width="40px"><a href="/list?user={{user}}&refresh=1&ym={{elem[2]}}">{{ elem[0] }}</a></td>
     <td class="summary" align="right" width="70px">{{ elem[1] }} km</td>
     </tr>
     {% endfor %}

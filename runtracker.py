@@ -339,7 +339,7 @@ def avgSpeedperTrack(distance, time, interval, hr):
 	return (iSpeed)
 		
 # create list page (with totals)
-def createList(json_data, user, type):
+def createList(json_data, user, type, ym, yw):
 	# create two HTML blocks for 'list'
 	#  one block (body) is the main list, the other block shows totals of the last 6 weeks and months.
 	
@@ -349,7 +349,7 @@ def createList(json_data, user, type):
 	totalsMonth = {}
 	totalsWeek = {}
 	totalsYear = {}
-
+	
 	for item in json_data:
 		if item['type'] == 'Run':
 			if ( int(type) == 0 or item['workout_type'] == int(type) ):
@@ -361,12 +361,12 @@ def createList(json_data, user, type):
 				tMovingTime = mmss(item['moving_time'])
 				
 				# This part is to calculate totals per year-month
-				yearMonth = str(runDate.year)+" "+str( "%02d" % runDate.month )
+				yearMonth = str(runDate.year)+"-"+str( "%02d" % runDate.month )
 				if yearMonth not in totalsMonth.keys():
 					totalsMonth[yearMonth] = 0
 				totalsMonth[yearMonth] = totalsMonth[yearMonth] + item['distance']
 				
-				yearWeek  = str(runDate.year)+" "+str( "%02d" % (runDate.isocalendar()[1]) )
+				yearWeek  = str(runDate.year)+"-"+str( "%02d" % (runDate.isocalendar()[1]) )
 				if yearWeek not in totalsWeek.keys():
 					totalsWeek[yearWeek] = 0
 				totalsWeek[yearWeek] = totalsWeek[yearWeek] + item['distance']
@@ -380,19 +380,20 @@ def createList(json_data, user, type):
 				# Does the cache contains this activity?
 				tCache = getActivityCashed(user, item['id'])
 
-				HTML_Body =  HTML_Body + render_template('list_simple_body.html', item=item, tMovingTime=mmss(item['moving_time']), tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tCache=tCache, user=user )
+				if ( (ym == '' or ym == yearMonth) and ( yw == '' or yw == yearWeek ) ):
+					HTML_Body =  HTML_Body + render_template('list_simple_body.html', item=item, tMovingTime=mmss(item['moving_time']), tRunDate=tRunDate, tRunPace=tRunPace, tDistance=tDistance, tWeekDay=tWeekDay, tCache=tCache, user=user )
 	
 	lMonthTots = []
 	for i in reversed(sorted(totalsMonth.keys())):
-		thisMonth = int(i.split()[1])
-		lMonthTots.append([ Months[thisMonth-1], int(totalsMonth[i]/1000+0.5) ])
+		thisMonth = int(i.split('-')[1])
+		lMonthTots.append([ Months[thisMonth-1], int(totalsMonth[i]/1000+0.5), i ])
 		if len(lMonthTots) == 6:
 			break
 			
 	lWeekTots = []
 	for i in reversed(sorted(totalsWeek.keys())):
-		thisWeek = int(i.split()[1])
-		lWeekTots.append([ thisWeek, "%4.1f" % (totalsWeek[i]/1000) ])
+		thisWeek = int(i.split('-')[1])
+		lWeekTots.append([ thisWeek, "%4.1f" % (totalsWeek[i]/1000), i ])
 		if len(lWeekTots) == 8:
 			break
 		
@@ -403,7 +404,7 @@ def createList(json_data, user, type):
 		if len(lYearTots) == 1:
 			break
 
-	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots, lYearTots=lYearTots)
+	HTML_Tots = render_template('list_simple_totals.html', lMonthTots = lMonthTots, lWeekTots=lWeekTots, lYearTots=lYearTots, user=user)
 
 	return(HTML_Body, HTML_Tots)
 
@@ -603,9 +604,7 @@ token = ''
 
 
 @app.route('/login')
-def login():
-	global header
-	
+def login():	
 	if session.get('access_token', None) is None:
 		return redirect(Client().authorization_url(client_id=STRAVA_CLIENT_ID, redirect_uri=STRAVA_CALLBACK_URL, scope="view_private"))
 	else:
@@ -704,6 +703,16 @@ def list():
 		return( make_response( redirect('/') ) )
 	
 	user = request.args['user']
+	
+	if ( request.args.has_key('ym') ):
+		ym = request.args['ym']
+	else:
+		ym =''
+		
+	if ( request.args.has_key('yw') ):
+		yw = request.args['yw']
+	else:
+		yw =''
 
 	readCache = 1
 	if (request.args.has_key('refresh')):
@@ -716,7 +725,7 @@ def list():
 	json_data = getStravaList(readCache, user)	
 
 	HTML_Header = render_template('header.html', user=user)
-	HTML_Body, HTML_Tots = createList(json_data, user, type)
+	HTML_Body, HTML_Tots = createList(json_data, user, type, ym, yw)
 	
 	return( render_template('list_simple_frame.html', HTML_Header=HTML_Header, HTML_Body=HTML_Body, HTML_Tots=HTML_Tots) )
 
