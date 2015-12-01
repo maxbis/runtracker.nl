@@ -356,7 +356,7 @@ def createList(json_data, user, type, ym, yw):
 				runDate = datetime.datetime(*map(int, re.split('[^\d]', item['start_date_local'])[:-1]))
 				tWeekDay = weekday[runDate.weekday()]
 				tRunDate = runDate.strftime("%d %b %Y, %H:%M")
-				tRunPace = mmss(1000/item['average_speed'])
+				tRunPace = mmss(1000/max(1,item['average_speed']))
 				tDistance = "%3.1f" % ( item['distance']/1000 )
 				tMovingTime = mmss(item['moving_time'])
 				
@@ -435,14 +435,15 @@ def createOverview(json_activity, user, type, sDistance):
 				tRunPace = mmss(1000/item['average_speed'])
 				tDistance = "%3.1f" % ( item['distance']/1000 )
 				tMovingTime = mmss(item['moving_time'])
+				notMoving = 0 # This gave an exception with Runkeeper data, don;t know why?
 				
 				jsonFileName = os.path.join(path, "strava"+str(item['id'])+"-d.json")
-				
+
 				if os.path.isfile(jsonFileName):
 					file = open(jsonFileName, "r")
 					json_detail = json.load(file)
 					file.close()
-					
+
 					data = {}
 					for element in json_detail:
 						data[element["type"]] = element["data"]
@@ -568,7 +569,7 @@ def getStravaTrackDetails(user,actId):
 		header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
 		url = 'https://www.strava.com/api/v3/activities/'+str(actId)+'/streams/time,distance,heartrate,cadence,moving'
 		json_data = requests.get(url, headers=header).json()
-		if len(json_data) > 3:
+		if len(json_data) > 2:
 			file = open(jsonFileName,"w")
 			json.dump(json_data, file)
 			file.close()
@@ -759,4 +760,4 @@ def cache():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8084, debug = True)
+    app.run(host='0.0.0.0', port=8480, debug = True, threaded=True)
