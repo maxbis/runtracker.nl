@@ -15,6 +15,7 @@ import datetime
 import pprint
 import os.path
 import glob
+import time
 
 # ---- ---- ---- ----
 
@@ -58,8 +59,8 @@ def findFastestTrack(trackLen, cumTime, cumDistance, heartrate, cadence):
 def wAvg(thisList, time, p1, p2):
 		# Weighted average: weight is time (delta) before measurement
 		# Time and thisList are both lists. The time determines the weight.
-		#   Example: thisList: 100, 220, 100, time: 1,2,4
-		#   Weigthed avg is: ( 1x100 + 1x120 + 2x80 ) / 4
+		#   Example: thisList: 100, 220, 90, time: 1,2,4
+		#   Weigthed avg is: ( 1x100 + 2x220 + 4x90 ) / 7
 		
 		thisWeight = 0
 		thisAvg = 0
@@ -72,7 +73,7 @@ def wAvg(thisList, time, p1, p2):
 			
 			thisWeight = thisWeight + interval
 			thisAvg = thisAvg + interval * thisList[i]
-
+		
 		return( thisAvg / thisWeight )
 
 # Format integer to hh:mm:ss string
@@ -214,9 +215,9 @@ def analyseActivity(user, id, name, date, split):
 	tTotTime = "%s (Pause: %s, Moving: %s)" % ( mmss(lTime[-1]+notMoving), mmss(notMoving), mmss(lTime[-1] ) )
 	#tTotPace = 	"%s (%2.2f km/h)" % ( mmss( (lTime[-1]) *1000/lDistance[-1] ), 3600 / ( (lTime[-1]) *1000/lDistance[-1]) )
 	tTotPace = 	"%s" % ( mmss( (lTime[-1]) *1000/lDistance[-1] ) )
-	tAvgHeartrate = "%3s (max %3s)" % ( ( wAvg(lHr, lTime, 0, len(lHr)-1 ) ), ( max(lHr) ) )
-	tAvgCadence = "%3s (max %3s)" %   ( ( wAvg(lCad, lTime, 0, len(lCad)-1 )*2 ), ( max(lCad) * 2 ) )
-	tAvgStep = "%2.2f (max %2.2f)" %  ( ( wAvg(lStep, lTime, 0, len(lStep)-1 ) ), ( max(lStep) ) )
+	tAvgHeartrate = "%3s bpm (max %3s)" % ( ( wAvg(lHr, lTime, 0, len(lHr)-1 ) ), ( max(lHr) ) )
+	tAvgCadence   = "%3s spm (max %3s)" %   ( ( wAvg(lCad, lTime, 0, len(lCad)-1 )*2 ), ( max(lCad) * 2 ) )
+	tAvgStep      = "%2.0f cm (max %2.0f)" %  ( ( wAvg(lStep, lTime, 0, len(lStep)-1 ) ), ( max(lStep) ) )
 
 	# *** SECTION 2 *** track section in detailed view
 	trackList=[]
@@ -271,20 +272,20 @@ def analyseActivity(user, id, name, date, split):
 	
 	# Split time / Half Times
 	interval = int((lDistance[-1]/2)+0.5)
-	hSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr)
+	hSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
 
 	# Quarter Splits
 	interval = int((lDistance[-1]/4)+0.5)
-	qSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr)
+	qSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
 	
 	# Splits - default 1000 m.
 	interval = int(split)
-	kmSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr)
+	kmSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
 
 	return( render_template('details.html', user=user, tTrackList=trackList, tPaceZones=tPaceZones, tHrZones=tHrZones, tCadZones=tCadZones, tStepZones=tStepZones, tRunName=tRunName, tRunId = tRunId, tRunDate=tRunDate, tTotTrackLen=tTotTrackLen, tTotTime=tTotTime, tTotPace=tTotPace, tAvgHeartrate=tAvgHeartrate, tAvgCadence=tAvgCadence, tAvgStep=tAvgStep, hSpeed=hSpeed, qSpeed=qSpeed, kmSpeed=kmSpeed, tSplit=split ) )
 
 # Determine average speed per x meter (used for split overview in main detailed screen, section 4)
-def avgSpeedperTrack(distance, time, interval, hr):
+def avgSpeedperTrack(distance, time, interval, hr, cad):
 	
 	thisInterval = 1
 	prev = 0
@@ -303,11 +304,16 @@ def avgSpeedperTrack(distance, time, interval, hr):
 				dDistance = distance[i]
 				
 			dSpeed = 1000*dTime/dDistance
-			iHr = wAvg(hr, time, prev, i)
+			iHr  = wAvg(hr,  time, prev, i)
+			iCad = wAvg(cad, time, prev, i) * 2
+			if iCad < 10:
+				step = 0
+			else:
+				step =  int( dDistance * 6000 / (dTime * iCad) )
 			
 			deviation = "%3.1f" % ( (dSpeed -avgSpeed)*dDistance/1000 )
 			
-			iSpeed.append( { 'i': thisInterval, 'dev': deviation, 'dDistance': int(dDistance+0.5), 'distance': distance[i], 'dTime': dTime, 'dSpeed': dSpeed, 'dTimeStr': mmss(dTime), 'dSpeedStr': mmss(dSpeed), 'faster': (dSpeed<=avgSpeed), 'hr': iHr, 'hi_low': 0 } )
+			iSpeed.append( { 'i': thisInterval, 'dev': deviation, 'dDistance': int(dDistance+0.5), 'distance': distance[i], 'dTime': dTime, 'dSpeed': dSpeed, 'dTimeStr': mmss(dTime), 'dSpeedStr': mmss(dSpeed), 'faster': (dSpeed<=avgSpeed), 'hr': iHr, 'hi_low': 0, 'cad': iCad, 'step': step } )
 
 			prev = i
 			thisInterval = thisInterval + 1
@@ -318,10 +324,15 @@ def avgSpeedperTrack(distance, time, interval, hr):
 		dDistance = distance[i] - distance[prev]
 		dSpeed = 1000*dTime/dDistance
 		iHr = wAvg(hr, time, prev, i)
+		iCad = wAvg(cad, time, prev, i) * 2
+		if iCad < 10:
+			step = 0
+		else:
+			step = int( dDistance * 6000 / (dTime * iCad) )
 		
 		deviation = "%3.1f" % ( (dSpeed -avgSpeed)*dDistance/1000 )
 
-		iSpeed.append( { 'i': thisInterval, 'dev': deviation, 'dDistance': int(dDistance+0.5), 'distance': distance[i], 'dTime': dTime, 'dSpeed': dSpeed, 'dTimeStr': mmss(dTime), 'dSpeedStr': mmss(dSpeed), 'faster': (dSpeed<=avgSpeed), 'hr': iHr, 'hi_low': 0 } )
+		iSpeed.append( { 'i': thisInterval, 'dev': deviation, 'dDistance': int(dDistance+0.5), 'distance': distance[i], 'dTime': dTime, 'dSpeed': dSpeed, 'dTimeStr': mmss(dTime), 'dSpeedStr': mmss(dSpeed), 'faster': (dSpeed<=avgSpeed), 'hr': iHr, 'hi_low': 0, 'cad': iCad, 'step': step } )
 	
 	low, hi, lowi, hii = 999, 0, 0, 0
 	
@@ -371,7 +382,7 @@ def createList(json_data, user, type, ym, yw):
 					totalsWeek[yearWeek] = 0
 				totalsWeek[yearWeek] = totalsWeek[yearWeek] + item['distance']
 				
-				# NEW Year totals
+				# Year totals
 				thisYear = str(runDate.year)
 				if thisYear not in totalsYear.keys():
 					totalsYear[thisYear] = 0
@@ -493,13 +504,42 @@ def getStravaList(readCache, user):
 	jsonFileName = os.path.join(path, "list.json")
 	
 	if os.path.isfile(jsonFileName) and readCache:
+		
 		file = open(jsonFileName, "r")
 		json_data = json.load(file)
 		file.close()
-	else:
+		
+	else: # no cache
+
 		header = {'Authorization': 'Bearer {0}'.format(session.get('access_token'))}
-		url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=200'
-		json_data = requests.get(url, headers=header).json()
+	
+		if os.stat(jsonFileName).st_mtime < time.time() -5 * 86400:
+				
+			i = 1
+			url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=50&page='+str(i)
+			json_data = requests.get(url, headers=header).json()
+			thisYear = json_data[0]['start_date_local'][0:4]
+
+			while (json_data<>[] and i<10 and json_data[-1]['start_date_local'][0:4] == thisYear ) :
+				i = i + 1
+				url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=50&page='+str(i)
+				json_data = json_data + requests.get(url, headers=header).json()
+			
+		else: # json file not older than 5 days, update
+
+			file = open(jsonFileName, "r")
+			json_data = json.load(file)
+			file.close()
+		
+			lastID = json_data[0]['id']
+			# update jsonfile
+			url = 'https://www.strava.com/api/v3/athlete/activities/?per_page=5&page=1'
+		
+			new_json = requests.get(url, headers=header).json()
+			for i in reversed(range(0,5)):
+				if new_json[i]['id'] >  lastID:
+					json_data.insert(0, new_json[i] )
+			
 		file = open(jsonFileName,"w")
 		json.dump(json_data, file)
 		file.close()
@@ -728,8 +768,33 @@ def list():
 	HTML_Header = render_template('header.html', user=user)
 	HTML_Body, HTML_Tots = createList(json_data, user, type, ym, yw)
 	
-	return( render_template('list_simple_frame.html', HTML_Header=HTML_Header, HTML_Body=HTML_Body, HTML_Tots=HTML_Tots) )
+	return( render_template('list_simple_frame.html',HTML_Header=HTML_Header,HTML_Body=HTML_Body,HTML_Tots=HTML_Tots) )
 
+
+# Quick 'hack' to see totals only
+@app.route('/tots')
+def tots():
+	# show list of activities and include week- and month totals
+	if session.get('access_token', None) is None:
+		return redirect('/login')
+	
+	if ( not request.args.has_key('user') ):
+		return( make_response( redirect('/') ) )
+	
+	user = request.args['user']
+
+	readCache = 1
+	type = 0
+	ym=''
+	yw=''
+
+	json_data = getStravaList(readCache, user)	
+
+	HTML_Header = render_template('tots_header.html', user=user)
+	HTML_Body, HTML_Tots = createList(json_data, user, type, ym, yw)
+	
+	return(HTML_Header + HTML_Tots)
+	
 
 @app.route('/cache')
 def cache():

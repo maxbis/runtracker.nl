@@ -1,4 +1,4 @@
-<br>
+<br><br>
 <table>
 <tr>
  <td style="border-bottom: none; text-align: center; font: 16px sans-serif;" colspan=2><b>{{ tRunName }}</b> {{ tRunDate.1 }}</td>
@@ -238,18 +238,23 @@
 	<td class="head">Time</td>
 	<td class="head">Pace</td>
 	<td class="head" text-align: right;>&nbsp;&nbsp;&nbsp;&Delta;</td>	
-	<td class="head" text-align: right;>HR</td>
 	<td class="head"></td>
+	<td class="head"></td>
+	<td class="head"></td>
+	<td class="headR">HR</td>
+	<td class="headR">Cad</td>
+	<td class="headR">Step</td>
 	</tr>
-	
-<tr><td style="color: grey;" colspan=6>&nbsp;Splits</td>
+
+<tr>
+<td style="color: grey;" colspan=6>&nbsp;Splits</td>
 <td style="color: Grey;">
 6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
 </td>
-
+<td style="color: grey;" colspan=4></td>
 </tr>
 
 	{% for elem in hSpeed %}
@@ -260,8 +265,8 @@
 		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
 		
 		<td width=30px style="color:DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
-		
-		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
+		<td></td>
+
 		<td class="stripe-6" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
@@ -278,20 +283,39 @@
 		{% endif %}
 		</td>
 		
+		<td></td>
+		{% if elem.hr >= 170 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% endif %}
+
+		{% if elem.cad >= 178 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% endif %}
+		{% if elem.step >= 130 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% endif %}
+			
+		
 	</tr>
 	{% endfor %}
 	
-<tr><td style="color: grey;"colspan=6>&nbsp;Quarter Splits</td>
+<tr>
+<td style="color: grey;" colspan=6>&nbsp;Quarter Splits</td>
 <td style="color: Grey;">
 6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
 </td>
-
+<td style="color: grey;" colspan=3></td>
 </tr>
 
-	
 	{% for elem in qSpeed %}
 	<tr>
 		<td width=30px style="color: black; text-align: right;">Q{{ elem.i }}</td>
@@ -299,43 +323,63 @@
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
 		<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
 		
-		<td width=30px style="color: DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
-		
-		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
+		<td width=30px style="color:DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
+		<td></td>
+
 		<td class="stripe-6" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
-			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9px" style="background-color: limeGreen;">
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9" style="background-color: limeGreen;">
 			</canvas>
 			{% else %}
-			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9px" style="background-color: CadetBlue;">
+			<canvas id="myCanvas" width="{{ 1080-(elem.dSpeed*3) }}" height="9" style="background-color: CadetBlue;">
 			</canvas>
 			{% endif %}
 		{% endif %}
 		<!--- HTLM5 does not draw a 1 px hight HR line, switch code off for now (1000 shoudl be 0 to enable) -->
-		{% if elem.hr > 10000 %}
+		{% if elem.hr > 1000 %}
 		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
 		{% endif %}
 		</td>
 		
+		<td></td>
+		{% if elem.hr >= 170 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% endif %}
+
+		{% if elem.cad >= 178 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% endif %}
+		{% if elem.step >= 130 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% endif %}
+		
 	</tr>
 	{% endfor %}
-	
-<tr><td style="color: grey;"colspan=6>{{tSplit}} m. Splits
-</td>
+		
+<tr>
+<td style="color: grey;" colspan=6>&nbsp;{{tSplit}} m. Splits</td>
 <td style="color: Grey;">
 6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:00
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:40
 </td>
+<td style="color: grey;" colspan=3></td>
 </tr>
-	
+
 	{% for elem in kmSpeed %}
 	<tr>
 		<td width=30px style="color: black; text-align: right;">{{ elem.i }}</td>
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dDistance }}</td>
 		<td width=45px style="color: grey; text-align: right;">{{ elem.dTimeStr }}</td>
+		
 		{% if elem.hi_low == 0 %}
 			<td width=45px bgcolor=#E8F8E8 style="color: black; text-align: right;">{{ elem.dSpeedStr }}</td>
 		{% endif %}
@@ -345,10 +389,10 @@
 		{% if elem.hi_low == -1 %}
 			<td width=45px bgcolor=#E8F8E8 style="color: Red; text-align: right;"><b>{{ elem.dSpeedStr }}</b></td>
 		{% endif %}
+		
+		<td width=30px style="color:DarkBlue; text-align: right;">&nbsp;{{ elem.dev }}</td>
+		<td></td>
 
-		<td width=30px style="color: DarkGreen; text-align: right;">&nbsp;{{ elem.dev }}</td>
-
-		<td width=45px style="color: black; text-align: left;">&nbsp;{{ elem.hr }}</td>
 		<td class="stripe-6" width=450px>
 		{% if elem.dSpeed < 350 %}
 			{%if elem.faster == True %}
@@ -359,17 +403,34 @@
 			</canvas>
 			{% endif %}
 		{% endif %}
-	
 		<!--- HTLM5 does not draw a 1 px hight HR line, switch code off for now (1000 shoudl be 0 to enable) -->
 		{% if elem.hr > 1000 %}
-			<br><canvas id="myCanvas" height="1" width="{{ (elem.hr-100)*4 }}" style="background-color: LightCoral;"></canvas>
+		<br><canvas id="myCanvas" width="{{ (elem.hr-100)*4 }}" height="1" style="background-color: LightCoral;"></canvas>
 		{% endif %}
 		</td>
 		
-	</tr>
-	{% endfor %}
+		<td></td>
+		{% if elem.hr >= 170 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.hr }}</td>
+		{% endif %}
 
-	<tr><td colspan=7>
+		{% if elem.cad >= 178 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.cad }}</td>
+		{% endif %}
+		{% if elem.step >= 130 %}
+			<td width=45px bgcolor=#ffe5e5 style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% else %}
+			<td width=45px style="color: black; text-align: right;">&nbsp;{{ elem.step }}</td>
+		{% endif %}
+		
+	</tr>
+	{% endfor %}		
+
+	<tr><td colspan=8>
 	<br>
 	<a href="/strava?user={{user}}&id={{tRunId}}&split=100#splits">100</a> m.&nbsp;|&nbsp;
 	<a href="/strava?user={{user}}&id={{tRunId}}&split=200#splits">200</a> m.&nbsp;|&nbsp;
