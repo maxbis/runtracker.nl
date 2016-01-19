@@ -17,7 +17,7 @@ import os.path
 import glob
 import time
 
-# ---- ---- ---- ----
+#  ---- ---- ---- ----
 
 # Find fastest subtrack
 def findFastestTrack(trackLen, cumTime, cumDistance, heartrate, cadence):
@@ -74,7 +74,8 @@ def wAvg(thisList, time, p1, p2):
 			thisWeight = thisWeight + interval
 			thisAvg = thisAvg + interval * thisList[i]
 		
-		return( thisAvg / thisWeight )
+		# return weighted average '+thisWeight/2' add's 0.5 to the end result in order to have proper rounding
+		return( (thisAvg+thisWeight/2) / thisWeight )
 
 # Format integer to hh:mm:ss string
 def mmss(seconds):
@@ -113,8 +114,9 @@ def getZoneData(thisZones, cumTimeinZone, moveTime, iteration ):
 def filterData(time, distance, heartrate, cadence, moving ):
 	# create new list and filter pauses as well as outliers in speed
 	
-	outlierL = 2  # min outlier 3 km/h
-	outlierR = 25 # max outlier 24 km/h
+	outlierL = 2  # min outlier 3 km/h (value = 2)
+	outlierR = 100 # max outlier 24 km/h (value =25)
+	doNotFilter = False
 	
 	lTime = []
 	lDistance = []
@@ -141,7 +143,7 @@ def filterData(time, distance, heartrate, cadence, moving ):
 		dTime = time[i] - time[i-1]
 		if ( dTime>0 and moving[i] ):
 			dSpeed = dDistance * 3.6 / dTime # speed for this interval in km/h
-			if ( dSpeed > outlierL and dSpeed < outlierR ):
+			if ( (dSpeed > outlierL and dSpeed < outlierR) or doNotFilter ):
 				lTime.append( lTime[-1] + dTime )
 				lSpeed.append( dSpeed )
 				lDistance.append( lDistance[-1] + dDistance )
@@ -233,6 +235,7 @@ def analyseActivity(user, id, name, date, split):
 			# filt is dictionary[index, seconds] with indexes referring to the sequence of the main data set
 			# just before the point filtered; seconds contains the filtered #seconds.
 			for key in ({ k:v for (k,v) in filt.items() if (k>=x and k<=y) }):
+			# for key in dict((k, v) for k, v in filt.items() if all(k>=x and k<=y)):
 				sumFlt=sumFlt+filt[key]
 				numFlt=numFlt+1
 		
@@ -294,7 +297,7 @@ def avgSpeedperTrack(distance, time, interval, hr, cad):
 	avgSpeed = 1000*time[-1]/distance[-1]
 	
 	for i in range(len(distance)):
-		if distance[i] > (thisInterval * interval):
+		if distance[i] >= (thisInterval * interval):
 
 			if prev:
 				dTime = time[i] - time[prev]
@@ -377,7 +380,8 @@ def createList(json_data, user, type, ym, yw):
 					totalsMonth[yearMonth] = 0
 				totalsMonth[yearMonth] = totalsMonth[yearMonth] + item['distance']
 				
-				yearWeek  = str(runDate.year)+"-"+str( "%02d" % (runDate.isocalendar()[1]) )
+				# isocalendar()[0] = iso_year and isocalendar()[1] = iso_week and isocalendar()[2] = iso_day
+				yearWeek  = str(runDate.isocalendar()[0])+"-"+str( "%02d" % (runDate.isocalendar()[1]) )
 				if yearWeek not in totalsWeek.keys():
 					totalsWeek[yearWeek] = 0
 				totalsWeek[yearWeek] = totalsWeek[yearWeek] + item['distance']
@@ -497,7 +501,7 @@ def getStravaUserID():
 
 # get list of activities form Stava or cache
 def getStravaList(readCache, user):
-	path = 'cache/'+user
+	path = '/var/www/runtracker/cache/'+user
 	if not os.path.exists(path):
 		os.mkdir(path) 
 	
@@ -696,7 +700,7 @@ def start():
 @app.route('/hello')
 def hello():
 	# use to test if Flask is running
-	return 'Hello World'
+	return 'Hello World!'
 
 
 @app.route('/strava')
@@ -739,7 +743,6 @@ def list():
 	# show list of activities and include week- and month totals
 	if session.get('access_token', None) is None:
 		return redirect('/login')
-	
 	if ( not request.args.has_key('user') ):
 		return( make_response( redirect('/') ) )
 	
@@ -767,7 +770,7 @@ def list():
 
 	HTML_Header = render_template('header.html', user=user)
 	HTML_Body, HTML_Tots = createList(json_data, user, type, ym, yw)
-	
+
 	return( render_template('list_simple_frame.html',HTML_Header=HTML_Header,HTML_Body=HTML_Body,HTML_Tots=HTML_Tots) )
 
 
@@ -825,4 +828,4 @@ def cache():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8480, debug = True, threaded=True)
+    app.run(host='0.0.0.0', port=8080, debug = True, threaded=False)
