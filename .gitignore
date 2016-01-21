@@ -7,3 +7,7 @@ instance
 auth.ini
 secret*
 nohup.out
+runtracker.bak
+runtracker.wsgi
+start_runtracker
+uwsgi.ini
