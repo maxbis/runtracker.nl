@@ -1,7 +1,7 @@
 <br><br>
 <table>
 <tr>
- <td style="border-bottom: none; text-align: center; font: 16px sans-serif;" colspan=2><b>{{ tRunName }}</b> {{ tRunDate.1 }}</td>
+ <td style="border-bottom: none; text-align: center; font: 16px sans-serif;" colspan=2><b>{{ run.name }}</b> {{ run.date.1 }}</td>
 </tr>
 
 <tr>
@@ -10,13 +10,13 @@
 <!-- SUMMARY -->
 <table class="summary">
 	<tr>
-	  <td class="summary" width=200px>Date</td><td class="summary">{{ tRunDate.0 }}</td>
+	  <td class="summary" width=200px>Date</td><td class="summary">{{ run.date.0 }}</td>
 	</tr><tr>
-	  <td class="summary">Time</td><td class="summary">{{ tTotTime }}</td>
+	  <td class="summary">Time</td><td class="summary">{{ run.totTime }}</td>
 	</tr><tr>
-	  <td class="summary" width=200px>Total Track</td><td class="summary"><b>{{ tTotTrackLen }}</b> km</td>
+	  <td class="summary" width=200px>Total Track</td><td class="summary"><b>{{ run.totTrackLen }}</b> km</td>
 	</tr><tr>
-	  <td class="summary">Pace</td><td class="summary"><b>{{ tTotPace }}</b> min./hour</td>
+	  <td class="summary">Pace</td><td class="summary"><b>{{ run.totPace }}</b> min./hour</td>
 	</tr>
 </table>
 
@@ -24,11 +24,11 @@
 
 <table class="summary">
 	<tr>
-	  <td class="summary">Average Heart Rate</td><td class="summary">{{ tAvgHeartrate }}</td>
+	  <td class="summary">Average Heart Rate</td><td class="summary">{{ run.avgHeartrate }}</td>
 	</tr><tr>
-		 <td class="summary">Average Cadence</td><td class="summary">{{ tAvgCadence }}</td>
+		 <td class="summary">Average Cadence</td><td class="summary">{{ run.avgCadence }}</td>
 	</tr><tr>
-		 <td class="summary">Average Stride Length</td><td class="summary">{{ tAvgStep }}</td>
+		 <td class="summary">Average Stride Length</td><td class="summary">{{ run.avgStep }}</td>
 	</tr>
 </table>
 
@@ -364,7 +364,7 @@
 	{% endfor %}
 		
 <tr>
-<td style="color: grey;" colspan=6>&nbsp;{{tSplit}} m. Splits</td>
+<td style="color: grey;" colspan=6>&nbsp;{{tSplit}} m. (stdev: {{tStDev3}})</td>
 <td style="color: Grey;">
 6:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:20
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4:40

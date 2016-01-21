@@ -6,6 +6,7 @@ from flask import redirect
 from flask import redirect, session
 from ConfigParser import SafeConfigParser
 from stravalib import Client
+from math import sqrt
 
 import requests
 import json
@@ -91,7 +92,21 @@ def mmss(seconds):
 		string = "%d:%02d:%02d" % ( hh,mm,ss )
 
 	return( string )	
- 
+
+# calculate average
+def average(list):
+	sum = 0
+	for item in list:
+		sum = sum + item
+	return( (sum+0.0) / len(list) )
+
+# calculate standard deviation
+def stdev(list):	
+	sum = 0
+	for item in list:
+		sum = sum + ( item-average(list) )**2
+	return (round(sqrt(sum/len(list)), 2) )
+
 # Prepare data for the zone graphs (Heart Rate Zones, Page Zones, Cadence Zone and Stride Zones)
 def getZoneData(thisZones, cumTimeinZone, moveTime, iteration ):
  	thisZonesPlus = thisZones + [999]
@@ -185,6 +200,8 @@ def initList(list):
 # Main routine to start analysing data
 def analyseActivity(user, id, name, date, split):
 	
+	#import numpy
+	
 	json_data = getStravaTrackDetails(user,id)
 	
 	printDate = datetime.datetime(*map(int, re.split('[^\d]', date)[:-1]))
@@ -192,6 +209,7 @@ def analyseActivity(user, id, name, date, split):
 	paceZone = initList(paceZones)
 	cadZone = initList(cadZones)
 	stepZone = initList(stepZones)
+	run={}
 		
 	data = {}
 	for element in json_data:
@@ -210,16 +228,15 @@ def analyseActivity(user, id, name, date, split):
 	#  Difference in time filtered and unfiltered is out non-moving time.
 	notMoving = data['time'][-1] - lTime[-1]
 
-	tRunName = name
-	tRunId = str(id)
-	tRunDate = str(printDate).split(' ') #list with date and time
-	tTotTrackLen = "%4.2f" % ( lDistance[-1]/1000 )
-	tTotTime = "%s (Pause: %s, Moving: %s)" % ( mmss(lTime[-1]+notMoving), mmss(notMoving), mmss(lTime[-1] ) )
-	#tTotPace = 	"%s (%2.2f km/h)" % ( mmss( (lTime[-1]) *1000/lDistance[-1] ), 3600 / ( (lTime[-1]) *1000/lDistance[-1]) )
-	tTotPace = 	"%s" % ( mmss( (lTime[-1]) *1000/lDistance[-1] ) )
-	tAvgHeartrate = "%3s bpm (max %3s)" % ( ( wAvg(lHr, lTime, 0, len(lHr)-1 ) ), ( max(lHr) ) )
-	tAvgCadence   = "%3s spm (max %3s)" %   ( ( wAvg(lCad, lTime, 0, len(lCad)-1 )*2 ), ( max(lCad) * 2 ) )
-	tAvgStep      = "%2.0f cm (max %2.0f)" %  ( ( wAvg(lStep, lTime, 0, len(lStep)-1 ) ), ( max(lStep) ) )
+	run['name'] = name
+	run['id'] = str(id)
+	run['date'] = str(printDate).split(' ') #list with date and time
+	run['totTrackLen'] =  "%4.2f" % ( lDistance[-1]/1000 )
+	run['totTime'] = "%s (Pause: %s, Moving: %s)" % ( mmss(lTime[-1]+notMoving), mmss(notMoving), mmss(lTime[-1] ) )
+	run['totPace'] = "%s" % ( mmss( (lTime[-1]) *1000/lDistance[-1] ) )
+	run['avgHeartrate'] = "%3s bpm (max %3s)" % ( ( wAvg(lHr, lTime, 0, len(lHr)-1 ) ), ( max(lHr) ) )
+	run['avgCadence' ] = "%3s spm (max %3s)" %   ( ( wAvg(lCad, lTime, 0, len(lCad)-1 )*2 ), ( max(lCad) * 2 ) )
+	run['avgStep'] = "%2.0f cm (max %2.0f)" %  ( ( wAvg(lStep, lTime, 0, len(lStep)-1 ) ), ( max(lStep) ) )
 
 	# *** SECTION 2 *** track section in detailed view
 	trackList=[]
@@ -275,17 +292,18 @@ def analyseActivity(user, id, name, date, split):
 	
 	# Split time / Half Times
 	interval = int((lDistance[-1]/2)+0.5)
-	hSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
+	hSpeed, paceLIst = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
 
 	# Quarter Splits
 	interval = int((lDistance[-1]/4)+0.5)
-	qSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
-	
+	qSpeed, paceList = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
+
 	# Splits - default 1000 m.
 	interval = int(split)
-	kmSpeed = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
+	kmSpeed, paceList = avgSpeedperTrack(lDistance, lTime, interval, lHr, lCad)
+	stDev3 = stdev(paceList)
 
-	return( render_template('details.html', user=user, tTrackList=trackList, tPaceZones=tPaceZones, tHrZones=tHrZones, tCadZones=tCadZones, tStepZones=tStepZones, tRunName=tRunName, tRunId = tRunId, tRunDate=tRunDate, tTotTrackLen=tTotTrackLen, tTotTime=tTotTime, tTotPace=tTotPace, tAvgHeartrate=tAvgHeartrate, tAvgCadence=tAvgCadence, tAvgStep=tAvgStep, hSpeed=hSpeed, qSpeed=qSpeed, kmSpeed=kmSpeed, tSplit=split ) )
+	return( render_template('details.html', user=user, run=run, tTrackList=trackList, tPaceZones=tPaceZones, tHrZones=tHrZones, tCadZones=tCadZones, tStepZones=tStepZones, hSpeed=hSpeed, qSpeed=qSpeed, kmSpeed=kmSpeed, tSplit=split, tStDev3=stDev3 ) )
 
 # Determine average speed per x meter (used for split overview in main detailed screen, section 4)
 def avgSpeedperTrack(distance, time, interval, hr, cad):
@@ -294,6 +312,7 @@ def avgSpeedperTrack(distance, time, interval, hr, cad):
 	prev = 0
 	iSpeed = []
 	iTime = []
+	paceList = []
 	avgSpeed = 1000*time[-1]/distance[-1]
 	
 	for i in range(len(distance)):
@@ -315,6 +334,8 @@ def avgSpeedperTrack(distance, time, interval, hr, cad):
 				step =  int( dDistance * 6000 / (dTime * iCad) )
 			
 			deviation = "%3.1f" % ( (dSpeed -avgSpeed)*dDistance/1000 )
+			
+			paceList.append(dTime)
 			
 			iSpeed.append( { 'i': thisInterval, 'dev': deviation, 'dDistance': int(dDistance+0.5), 'distance': distance[i], 'dTime': dTime, 'dSpeed': dSpeed, 'dTimeStr': mmss(dTime), 'dSpeedStr': mmss(dSpeed), 'faster': (dSpeed<=avgSpeed), 'hr': iHr, 'hi_low': 0, 'cad': iCad, 'step': step } )
 
@@ -350,7 +371,7 @@ def avgSpeedperTrack(distance, time, interval, hr, cad):
 	iSpeed[lowi]['hi_low'] = -1
 	iSpeed[hii]['hi_low'] = 1
 	
-	return (iSpeed)
+	return (iSpeed, paceList)
 		
 # create list page (with totals)
 def createList(json_data, user, type, ym, yw):
