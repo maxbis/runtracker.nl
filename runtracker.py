@@ -104,7 +104,9 @@ def average(list):
 def stdev(list):	
 	sum = 0
 	for item in list:
-		sum = sum + ( item-average(list) )**2
+		
+		sum = sum + ( item - average(list) ) ** 2
+	
 	return (round(sqrt(sum/len(list)), 2) )
 
 # Prepare data for the zone graphs (Heart Rate Zones, Page Zones, Cadence Zone and Stride Zones)
